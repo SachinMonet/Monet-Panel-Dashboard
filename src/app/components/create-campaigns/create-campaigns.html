@@ -1,32 +1,28 @@
 <div class="campaign-container">
     <div class="campaign-shell">
-        <!-- Header -->
+
         <header class="campaign-header">
             <div class="campaign-header__content">
-                <button class="campaign-header__back" title="Go back" type="button" routerLink="/dashboard">
+                <button class="campaign-header__back" type="button" routerLink="/dashboard" title="Go back">
                     <lucide-icon name="arrow-left" class="icon"></lucide-icon>
                 </button>
-
-                <div class="campaign-header__logo">
-                    <span>PM</span>
-                </div>
-
+                <div class="campaign-header__logo"><span>PM</span></div>
                 <h1 class="campaign-header__title">Create Campaign</h1>
             </div>
         </header>
 
-        <!-- Step Indicator -->
         <div class="campaign-steps">
             <div class="campaign-steps__content">
                 @for (step of steps; track step.stepNumber; let last = $last) {
-                <button class="campaign-step" (click)="goToStep(step.stepNumber)"
+                <button class="campaign-step" type="button" disabled
                     [class.campaign-step--active]="isStepActive(step.stepNumber)"
                     [class.campaign-step--completed]="isStepCompleted(step.stepNumber)">
-                    <div class="campaign-step__circle" [class.campaign-step__circle--active]="
-                isStepActive(step.stepNumber) || isStepCompleted(step.stepNumber)
-              ">
+
+                    <div class="campaign-step__circle"
+                        [class.campaign-step__circle--active]="isStepActive(step.stepNumber) || isStepCompleted(step.stepNumber)">
                         @if (isStepCompleted(step.stepNumber)) {
-                        <lucide-icon name="check" class="step-check-icon"></lucide-icon>
+                        <span>{{ step.stepNumber }}</span>
+
                         } @else {
                         <span>{{ step.stepNumber }}</span>
                         }
@@ -34,247 +30,306 @@
                     <p class="campaign-step__label">{{ step.stepName }}</p>
                 </button>
 
-                @if (!last) {
-                <div class="campaign-steps__divider"></div>
-                }
+                @if (!last) { <div class="campaign-steps__divider"></div> }
                 }
             </div>
         </div>
 
-        <!-- Main -->
         <main class="campaign-main">
             <div class="campaign-form">
                 <h2 class="campaign-form__title">{{ currentStepData.title }}</h2>
 
-                <!-- STEP 2: Panels custom UI -->
-                @if (currentStepData.stepNumber === 2) {
+                @switch (currentStepData.stepNumber) {
+
+                @case (2) {
                 <form [formGroup]="form">
                     <div class="panel-configuration">
-                        <!-- Panel header -->
+
                         <div class="panel-header">
                             <h2 class="panel-title">Panel Configuration</h2>
                             <button class="btn-add-panel" type="button">
-                                <lucide-icon name="plus" class="icon-small"></lucide-icon>
-                                Add Panel
+                                <lucide-icon name="plus" class="icon-small"></lucide-icon> Add Panel
                             </button>
                         </div>
 
-                        <!-- Allocation Mode -->
                         <div class="panel-section allocation-mode">
                             <div class="allocation-mode-content">
                                 <div>
                                     <div class="allocation-label">Allocation Mode</div>
-                                    <div class="allocation-description">
-                                        Manually set target completes for each panel
+                                    <div class="allocation-description">Manually set target completes for each panel
                                     </div>
                                 </div>
                                 <div class="allocation-buttons">
-                                    <button class="btn-allocation active" type="button">
+                                    <button class="btn-allocation" type="button"
+                                        [class.active]="allocationMode === 'manual'"
+                                        (click)="setAllocationMode('manual')">
                                         Manual
                                     </button>
-                                    <button class="btn-allocation" type="button">
+
+                                    <button class="btn-allocation" type="button"
+                                        [class.active]="allocationMode === 'auto'" (click)="setAllocationMode('auto')">
                                         Auto-Allocate
                                     </button>
                                 </div>
+
                             </div>
                         </div>
 
-                        <!-- Allocated Completes -->
-                        <div class="panel-section allocated-completes">
+                        @if (allocationMode === 'manual') {
+                        <div class="panel-section allocated-completes"
+                            [class.allocated-completes--over]="allocationDiff > 0">
                             <div class="allocated-content">
                                 <div class="allocated-left">
                                     <lucide-icon name="circle-alert" class="warning-icon"></lucide-icon>
                                     <div>
                                         <div class="allocated-label">Allocated Completes</div>
-                                        <div class="allocated-value">1000 / 12</div>
+                                        <div class="allocated-value">
+                                            {{ form.get('targetCompletes')?.value || '0' }}
+                                            /
+                                            {{
+                                            (form.get('panel1Target')?.value || 0) +
+                                            (form.get('panel2Target')?.value || 0) +
+                                            (form.get('panel3Target')?.value || 0)
+                                            }}
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="allocated-over">Over by 988</div>
+
+                                <div class="allocated-over">
+                                    @if (allocationDiff > 0) {
+                                    Over by {{ allocationDiff }}
+                                    } @else if (allocationDiff < 0) { Remaining {{ -allocationDiff }} } @else {
+                                        Perfectly allocated } </div>
+                                </div>
+                            </div>
+                            }
+
+
+                            <div class="panel-table-container">
+                                <table class="panel-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Panel Provider</th>
+                                            <th>Target Completes</th>
+                                            <th>Achieved</th>
+                                            <th>CPI ($)</th>
+                                            <th>Status</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+
+                                    <tbody>
+                                        <tr class="panel-row">
+                                            <td>Lucid</td>
+                                            <td>
+                                                <input type="number" class="input-number" placeholder="500"
+                                                    formControlName="panel1Target" />
+                                            </td>
+                                            <td>0</td>
+                                            <td>
+                                                <input type="number" step="0.01" class="input-number" placeholder="2.5"
+                                                    formControlName="panel1Cpi" />
+                                            </td>
+                                            <td>Active</td>
+                                            <td>
+                                                <div class="actions">
+                                                    <button class="action-btn" type="button" title="Edit">
+                                                        <lucide-icon name="square-pen" class="icon-tiny"></lucide-icon>
+                                                    </button>
+                                                    <button class="action-btn" type="button" title="Pause">
+                                                        <lucide-icon name="pause" class="icon-tiny"></lucide-icon>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+
+                                        <tr class="panel-row alternate">
+                                            <td>Cint</td>
+                                            <td>
+                                                <input type="number" class="input-number" placeholder="300"
+                                                    formControlName="panel2Target" />
+                                            </td>
+                                            <td>0</td>
+                                            <td>
+                                                <input type="number" step="0.01" class="input-number" placeholder="2.8"
+                                                    formControlName="panel2Cpi" />
+                                            </td>
+                                            <td>Active</td>
+                                            <td>
+                                                <div class="actions">
+                                                    <button class="action-btn" type="button" title="Edit">
+                                                        <lucide-icon name="square-pen" class="icon-tiny"></lucide-icon>
+                                                    </button>
+                                                    <button class="action-btn" type="button" title="Pause">
+                                                        <lucide-icon name="pause" class="icon-tiny"></lucide-icon>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+
+                                        <tr class="panel-row">
+                                            <td>Dynata</td>
+                                            <td>
+                                                <input type="number" class="input-number" placeholder="200"
+                                                    formControlName="panel3Target" />
+                                            </td>
+                                            <td>0</td>
+                                            <td>
+                                                <input type="number" step="0.01" class="input-number" placeholder="3"
+                                                    formControlName="panel3Cpi" />
+                                            </td>
+                                            <td>Active</td>
+                                            <td>
+                                                <div class="actions">
+                                                    <button class="action-btn" type="button" title="Edit">
+                                                        <lucide-icon name="square-pen" class="icon-tiny"></lucide-icon>
+                                                    </button>
+                                                    <button class="action-btn" type="button" title="Pause">
+                                                        <lucide-icon name="pause" class="icon-tiny"></lucide-icon>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
-
-                        <!-- Panel table -->
-                        <div class="panel-table-container">
-                            <table class="panel-table">
-                                <thead>
-                                    <tr>
-                                        <th>Panel Provider</th>
-                                        <th>Target Completes</th>
-                                        <th>Achieved</th>
-                                        <th>CPI ($)</th>
-                                        <th>Status</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr class="panel-row">
-                                        <td>Lucid</td>
-                                        <td>
-                                            <input type="number" class="input-number" placeholder="500"
-                                                formControlName="panel1Target" />
-                                        </td>
-                                        <td>0</td>
-                                        <td>
-                                            <input type="number" step="0.01" class="input-number" placeholder="2.5"
-                                                formControlName="panel1Cpi" />
-                                        </td>
-                                        <td>Active</td>
-                                        <td>
-                                            <div class="actions">
-                                                <button class="action-btn" type="button" title="Edit">
-                                                    <lucide-icon name="square-pen" class="icon-tiny"></lucide-icon>
-                                                </button>
-                                                <button class="action-btn" type="button" title="Pause">
-                                                    <lucide-icon name="pause" class="icon-tiny"></lucide-icon>
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-
-                                    <tr class="panel-row alternate">
-                                        <td>Cint</td>
-                                        <td>
-                                            <input type="number" class="input-number" placeholder="300"
-                                                formControlName="panel2Target" />
-                                        </td>
-                                        <td>0</td>
-                                        <td>
-                                            <input type="number" step="0.01" class="input-number" placeholder="2.8"
-                                                formControlName="panel2Cpi" />
-                                        </td>
-                                        <td>Active</td>
-                                        <td>
-                                            <div class="actions">
-                                                <button class="action-btn" type="button" title="Edit">
-                                                    <lucide-icon name="square-pen" class="icon-tiny"></lucide-icon>
-                                                </button>
-                                                <button class="action-btn" type="button" title="Pause">
-                                                    <lucide-icon name="pause" class="icon-tiny"></lucide-icon>
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-
-                                    <tr class="panel-row">
-                                        <td>Dynata</td>
-                                        <td>
-                                            <input type="number" class="input-number" placeholder="200"
-                                                formControlName="panel3Target" />
-                                        </td>
-                                        <td>0</td>
-                                        <td>
-                                            <input type="number" step="0.01" class="input-number" placeholder="3"
-                                                formControlName="panel3Cpi" />
-                                        </td>
-                                        <td>Active</td>
-                                        <td>
-                                            <div class="actions">
-                                                <button class="action-btn" type="button" title="Edit">
-                                                    <lucide-icon name="square-pen" class="icon-tiny"></lucide-icon>
-                                                </button>
-                                                <button class="action-btn" type="button" title="Pause">
-                                                    <lucide-icon name="pause" class="icon-tiny"></lucide-icon>
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
                 </form>
                 }
 
-                <!-- OTHER STEPS: generic dynamic form -->
-                @if (currentStepData.stepNumber !== 2) {
+                @case (4) {
+                <div class="review-container">
+                    <div class="review-shell">
+                        <h2 class="review-title">Review & Launch</h2>
+                        <div class="review-content">
+
+                            <div class="review-card">
+                                <h3 class="review-card__title">Campaign Details</h3>
+                                <div class="review-grid">
+                                    <div class="review-row"><span class="review-label">Name:</span> <span
+                                            class="review-value">{{ form.get('campaignName')?.value || 'Not set'
+                                            }}</span></div>
+                                    <div class="review-row"><span class="review-label">Country:</span> <span
+                                            class="review-value">{{ form.get('country')?.value || 'Not set' }}</span>
+                                    </div>
+                                    <div class="review-row"><span class="review-label">LOI:</span> <span
+                                            class="review-value">{{ (form.get('loi')?.value) ? form.get('loi')?.value +
+                                            ' min' : 'Not set' }}</span></div>
+                                    <div class="review-row"><span class="review-label">IR:</span> <span
+                                            class="review-value">{{ (form.get('ir')?.value) ? form.get('ir')?.value +
+                                            '%' : 'Not set' }}</span></div>
+                                    <div class="review-row"><span class="review-label">Target:</span> <span
+                                            class="review-value">{{ form.get('targetCompletes')?.value || 'Not set'
+                                            }}</span></div>
+                                </div>
+                            </div>
+
+                            <div class="review-card">
+                                <h3 class="review-card__title">Panel Allocation</h3>
+                                <div class="review-panel-list">
+                                    <div class="review-panel-row">
+                                        <span class="review-panel-name">Lucid</span>
+                                        <span class="review-panel-meta">{{ form.get('panel1Target')?.value || 0 }}
+                                            completes @ ${{ form.get('panel1Cpi')?.value || 3 }} CPI</span>
+                                    </div>
+                                    <div class="review-panel-row">
+                                        <span class="review-panel-name">Cint</span>
+                                        <span class="review-panel-meta">{{ form.get('panel2Target')?.value || 0 }}
+                                            completes @ ${{ form.get('panel2Cpi')?.value || 3 }} CPI</span>
+                                    </div>
+                                    <div class="review-panel-row">
+                                        <span class="review-panel-name">Dynata</span>
+                                        <span class="review-panel-meta">{{ form.get('panel3Target')?.value || 0 }}
+                                            completes @ ${{ form.get('panel3Cpi')?.value || 3 }} CPI</span>
+                                    </div>
+                                </div>
+                                <div class="review-total">
+                                    <span>Total</span>
+                                    <span>{{ (form.get('panel1Target')?.value || 0) + (form.get('panel2Target')?.value
+                                        || 0) + (form.get('panel3Target')?.value || 0) }} completes</span>
+                                </div>
+                            </div>
+
+                            <div class="review-card">
+                                <form [formGroup]="form">
+                                    <div class="form-checkbox">
+                                        <input class="form-checkbox__input" type="checkbox" id="confirmDetails"
+                                            formControlName="confirmDetails" />
+                                        <label class="form-checkbox__label" for="confirmDetails">
+                                            I confirm all campaign details are correct <span
+                                                class="form-label__required">*</span>
+                                        </label>
+                                    </div>
+                                    @if (form.get('confirmDetails')?.touched && form.get('confirmDetails')?.invalid) {
+                                    <span class="form-error">Confirmation is required</span>
+                                    }
+                                </form>
+                            </div>
+                        </div>
+
+                        <div class="review-actions">
+                            <button type="button" class="btn btn--secondary" (click)="previousStep()">Back</button>
+                            <button type="button" class="btn btn--primary" (click)="submitForm()"
+                                [disabled]="!form.valid">Launch Campaign</button>
+                        </div>
+                    </div>
+                </div>
+                }
+
+                @default {
                 <form [formGroup]="form">
                     <div class="campaign-form__group">
                         @for (control of currentStepData.controls; track control.name) {
                         <div class="form-field" [class.form-field--full]="control.colSpan === 2"
                             [class.form-field--half]="control.colSpan === 1">
-                            <!-- Input -->
-                            @if (control.type === 'input') {
+
+                            @switch (control.type) {
+
+                            @case ('input') {
                             <label class="form-label" [for]="control.name">
-                                {{ control.label }}
-                                @if (control.required) {
-                                <span class="form-label__required">*</span>
+                                {{ control.label }} @if (control.required) { <span class="form-label__required">*</span>
                                 }
                             </label>
                             <input class="form-input" [id]="control.name" type="text"
                                 [placeholder]="control.placeholder || ''" [formControl]="getControl(control.name)" />
-                            @if (form.get(control.name!)?.touched && form.get(control.name!)?.invalid) {
-                            <span class="form-error">
-                                {{ control.label }} is required
-                            </span>
-                            }
                             }
 
-                            <!-- Dropdown -->
-                            @if (control.type === 'dropdown') {
+                            @case ('dropdown') {
                             <label class="form-label" [for]="control.name">
-                                {{ control.label }}
-                                @if (control.required) {
-                                <span class="form-label__required">*</span>
+                                {{ control.label }} @if (control.required) { <span class="form-label__required">*</span>
                                 }
                             </label>
                             <select class="form-select" [id]="control.name" [formControl]="getControl(control.name)">
-                                <option selected disabled value="">
-                                    {{ control.placeholder || 'Select option' }}
-                                </option>
-                                @for (option of control.options; track option) {
-                                <option [value]="option">{{ option }}</option>
-                                }
+                                <option selected disabled value="">{{ control.placeholder || 'Select option' }}</option>
+                                @for (option of control.options; track option) { <option [value]="option">{{ option }}
+                                </option> }
                             </select>
-                            @if (form.get(control.name!)?.touched && form.get(control.name!)?.invalid) {
-                            <span class="form-error">
-                                {{ control.label }} is required
-                            </span>
-                            }
                             }
 
-                            <!-- Textarea -->
-                            @if (control.type === 'textarea') {
+                            @case ('textarea') {
                             <label class="form-label" [for]="control.name">
-                                {{ control.label }}
-                                @if (control.required) {
-                                <span class="form-label__required">*</span>
+                                {{ control.label }} @if (control.required) { <span class="form-label__required">*</span>
                                 }
                             </label>
-                            <textarea class="form-textarea" [id]="control.name"
-                                [placeholder]="control.placeholder || ''" [formControl]="getControl(control.name)"
-                                rows="4"></textarea>
-                            @if (form.get(control.name!)?.touched && form.get(control.name!)?.invalid) {
-                            <span class="form-error">
-                                {{ control.label }} is required
-                            </span>
-                            }
+                            <textarea class="form-textarea" [id]="control.name" rows="4"
+                                [placeholder]="control.placeholder || ''"
+                                [formControl]="getControl(control.name)"></textarea>
                             }
 
-                            <!-- Checkbox -->
-                            @if (control.type === 'checkbox') {
+                            @case ('checkbox') {
                             <div class="form-checkbox">
                                 <input class="form-checkbox__input" type="checkbox" [id]="control.name"
                                     [formControl]="getControl(control.name)" />
                                 <label class="form-checkbox__label" [for]="control.name">
-                                    {{ control.label }}
-                                    @if (control.required) {
-                                    <span class="form-label__required">*</span>
-                                    }
+                                    {{ control.label }} @if (control.required) { <span
+                                        class="form-label__required">*</span> }
                                 </label>
                             </div>
-                            @if (form.get(control.name!)?.touched && form.get(control.name!)?.invalid) {
-                            <span class="form-error">
-                                {{ control.label }} is required
-                            </span>
-                            }
                             }
 
-                            <!-- Radio -->
-                            @if (control.type === 'radio') {
+                            @case ('radio') {
                             <label class="form-label">
-                                {{ control.label }}
-                                @if (control.required) {
-                                <span class="form-label__required">*</span>
+                                {{ control.label }} @if (control.required) { <span class="form-label__required">*</span>
                                 }
                             </label>
                             <div class="form-radio-group">
@@ -282,182 +337,45 @@
                                 <div class="form-radio">
                                     <input class="form-radio__input" type="radio" [id]="control.name + '-' + option"
                                         [value]="option" [formControl]="getControl(control.name)" />
-                                    <label class="form-radio__label" [for]="control.name + '-' + option">
-                                        {{ option }}
-                                    </label>
+                                    <label class="form-radio__label" [for]="control.name + '-' + option">{{ option
+                                        }}</label>
                                 </div>
                                 }
                             </div>
-                            @if (form.get(control.name!)?.touched && form.get(control.name!)?.invalid) {
-                            <span class="form-error">
-                                {{ control.label }} is required
-                            </span>
                             }
+                            }
+
+                            @if (form.get(control.name!)?.touched && form.get(control.name!)?.invalid) {
+                            <span class="form-error">{{ control.label }} is required</span>
                             }
                         </div>
                         }
                     </div>
                 </form>
                 }
-
-                <!-- STEP 4: Review & Launch -->
-                @if (currentStepData.stepNumber === 4) {
-                <div class="review-container">
-                    <div class="review-shell">
-                        <h2 class="review-title">Review &amp; Launch</h2>
-
-                        <div class="review-content">
-                            <!-- Campaign Details -->
-                            <div class="review-card">
-                                <h3 class="review-card__title">Campaign Details</h3>
-                                <div class="review-grid">
-                                    <div class="review-row">
-                                        <span class="review-label">Name:</span>
-                                        <span class="review-value">
-                                            {{ form.get('campaignName')?.value || 'Not set' }}
-                                        </span>
-                                    </div>
-
-                                    <div class="review-row">
-                                        <span class="review-label">Country:</span>
-                                        <span class="review-value">
-                                            {{ form.get('country')?.value || 'Not set' }}
-                                        </span>
-                                    </div>
-
-                                    <div class="review-row">
-                                        <span class="review-label">LOI:</span>
-                                        <span class="review-value">
-                                            {{
-                                            form.get('loi')?.value
-                                            ? form.get('loi')?.value + ' min'
-                                            : 'Not set min'
-                                            }}
-                                        </span>
-                                    </div>
-
-                                    <div class="review-row">
-                                        <span class="review-label">IR:</span>
-                                        <span class="review-value">
-                                            {{
-                                            form.get('ir')?.value
-                                            ? form.get('ir')?.value + '%'
-                                            : 'Not set%'
-                                            }}
-                                        </span>
-                                    </div>
-
-                                    <div class="review-row">
-                                        <span class="review-label">Total Target:</span>
-                                        <span class="review-value">
-                                            {{ form.get('targetCompletes')?.value || 'Not set' }}
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Panel Allocation -->
-                            <div class="review-card">
-                                <h3 class="review-card__title">Panel Allocation</h3>
-
-                                <div class="review-panel-list">
-                                    <div class="review-panel-row">
-                                        <span class="review-panel-name">Lucid</span>
-                                        <span class="review-panel-meta">
-                                            {{
-                                            form.get('panel1Target')?.value || 0
-                                            }} completes @ $
-                                            {{
-                                            form.get('panel1Cpi')?.value || 3
-                                            }}
-                                            CPI
-                                        </span>
-                                    </div>
-
-                                    <div class="review-panel-row">
-                                        <span class="review-panel-name">Cint</span>
-                                        <span class="review-panel-meta">
-                                            {{
-                                            form.get('panel2Target')?.value || 0
-                                            }} completes @ $
-                                            {{
-                                            form.get('panel2Cpi')?.value || 3
-                                            }}
-                                            CPI
-                                        </span>
-                                    </div>
-
-                                    <div class="review-panel-row">
-                                        <span class="review-panel-name">Dynata</span>
-                                        <span class="review-panel-meta">
-                                            {{
-                                            form.get('panel3Target')?.value || 0
-                                            }} completes @ $
-                                            {{
-                                            form.get('panel3Cpi')?.value || 3
-                                            }}
-                                            CPI
-                                        </span>
-                                    </div>
-                                </div>
-
-                                <!-- Total -->
-                                <div class="review-total">
-                                    <span>Total</span>
-                                    <span>
-                                        {{
-                                        (form.get('panel1Target')?.value || 0) +
-                                        (form.get('panel2Target')?.value || 0) +
-                                        (form.get('panel3Target')?.value || 0)
-                                        }}
-                                        completes
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Bottom actions -->
-                        <div class="review-actions">
-                            <button type="button" class="btn btn--secondary" (click)="previousStep()">
-                                Back
-                            </button>
-                            <button type="button" class="btn btn--primary" (click)="submitForm()"
-                            
-                                >
-                                Launch Campaign
-                            </button>
-                        </div>
-                    </div>
+                } @if (currentStepData.stepNumber !== 4) {
+                <div class="campaign-form__actions">
+                    @if (currentStep > 1) {
+                    <button class="btn btn--secondary" (click)="previousStep()">Previous</button>
+                    }
+                    @if (currentStep < totalSteps) { <button class="btn btn--primary" (click)="nextStep()"
+                        [disabled]="!isCurrentStepValid()">Continue</button>
+                        } @else {
+                        <button class="btn btn--primary" (click)="submitForm()" [disabled]="!form.valid">Submit</button>
+                        }
                 </div>
                 }
 
-
-                <!-- Action Buttons -->
-                <div class="campaign-form__actions">
-                    <!-- <button class="btn btn--secondary" (click)="cancelForm()">
-                        Cancel
-                    </button> -->
-
-                    @if (currentStep > 1 && currentStepData.stepNumber !== 4) {
-                    <button class="btn btn--secondary" (click)="previousStep()">
-                        Previous
-                    </button>
-                    }
-
-                    @if (currentStep < totalSteps) { <button class="btn btn--primary" (click)="nextStep()"
-                        [disabled]="!isCurrentStepValid()">
-                        Continue
-                        </button>
-                        } @else {
-                        @if (currentStepData.stepNumber !== 4) {
-                        <button class="btn btn--primary" (click)="submitForm()" [disabled]="!form.valid">
-                            Submit
-                        </button>
-                        }
-                        }
-
-                </div>
             </div>
         </main>
     </div>
 </div>
+
+<ng-template #panelActions>
+    <div class="actions">
+        <button class="action-btn" type="button" title="Edit"><lucide-icon name="square-pen"
+                class="icon-tiny"></lucide-icon></button>
+        <button class="action-btn" type="button" title="Pause"><lucide-icon name="pause"
+                class="icon-tiny"></lucide-icon></button>
+    </div>
+</ng-template>
