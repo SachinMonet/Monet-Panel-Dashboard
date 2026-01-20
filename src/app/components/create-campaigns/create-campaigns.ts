@@ -42,7 +42,7 @@ export class CreateCampaigns {
           placeholder: 'Select country',
           required: true,
           name: 'country',
-          options: ['United States', 'United Kingdom', 'Canada', 'Australia', 'Germany', 'France'],
+         // options: [],
           colSpan: 1,
         },
         {
@@ -51,7 +51,7 @@ export class CreateCampaigns {
           placeholder: 'Select language',
           required: true,
           name: 'language',
-          options: ['English', 'Spanish', 'French', 'German', 'Italian'],
+          //options: [],
           colSpan: 1,
         },
         {
@@ -191,11 +191,22 @@ export class CreateCampaigns {
       ],
     },
   ];
+ languages: any[] = [];
+countries: any[] = [];
 
   constructor(private fb: FormBuilder, private _api: ApiService) { }
 
   ngOnInit() {
     this.buildForm();
+this._api.get('languages').subscribe((res: any) => {
+  this.languages = res.data; // Store full objects with id and name
+  console.log(res, this.languages);
+});
+
+this._api.get('countries').subscribe((res: any) => {
+  this.countries = res.data; // Store full objects with id and name
+  console.log(res, this.countries);
+});
   }
 
   getControl(name: string | undefined) {

@@ -296,13 +296,27 @@
 
                             @case ('dropdown') {
                             <label class="form-label" [for]="control.name">
-                                {{ control.label }} @if (control.required) { <span class="form-label__required">*</span>
+                                {{ control.label }}
+                                @if (control.required) {
+                                <span class="form-label__required">*</span>
                                 }
                             </label>
                             <select class="form-select" [id]="control.name" [formControl]="getControl(control.name)">
                                 <option selected disabled value="">{{ control.placeholder || 'Select option' }}</option>
-                                @for (option of control.options; track option) { <option [value]="option">{{ option }}
-                                </option> }
+
+                                @if (control.name === 'language') {
+                                @for (lang of languages; track lang.id) {
+                                <option [value]="lang.id">{{ lang.name }}</option>
+                                }
+                                } @else if (control.name === 'country') {
+                                @for (country of countries; track country.id) {
+                                <option [value]="country.id">{{ country.name }}</option>
+                                }
+                                } @else if (control.options && control.options.length > 0) {
+                                @for (option of control.options; track $index) {
+                                <option [value]="option">{{ option }}</option>
+                                }
+                                }
                             </select>
                             }
 
