@@ -1,0 +1,95 @@
+<main class="providers-main">
+  <div class="providers-container">
+    <!-- Header -->
+    <div class="providers-header">
+      <div>
+        <h2 class="providers-title">Panel Providers</h2>
+        <p class="providers-subtitle">Manage your panel provider configurations</p>
+      </div>
+
+      <button class="btn-primary">
+        <span class="btn-icon">
+          <lucide-icon [name]="addButton.icon"></lucide-icon>
+        </span>
+        <span>{{ addButton.label }}</span>
+      </button>
+    </div>
+
+    <!-- Filters -->
+    <div class="providers-filters">
+      <div class="search-wrapper">
+        <span class="search-icon">
+          <lucide-icon name="search"></lucide-icon>
+        </span>
+        <input type="text" [placeholder]="filters.searchPlaceholder" class="search-input" [(ngModel)]="searchFilterBykey" (keyup)="searchFilter($event)" />
+      </div>
+
+      <select class="select" (change)="filterByStatus($event.target)">
+        @for( opt of filters.statusOptions; track $index) {<option>{{ opt }}</option>
+      }
+      </select>
+    </div>
+
+    <!-- Table -->
+    <div class="table-wrapper">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Provider</th>
+            <th>Status</th>
+            <th>Active Campaigns</th>
+            <th>Total Completes</th>
+            <th>Quality Score</th>
+            <th>Avg CPI</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          @for( p of filteredRows; track $index){<tr class="row">
+            <td>
+              <div class="provider-cell">
+                <p class="provider-name">{{ p.name }}</p>
+                <p class="provider-code">{{ p.code }}</p>
+              </div>
+            </td>
+
+            <td>
+              <div class="status-cell">
+                <lucide-icon [name]="p.statusIcon" [ngClass]="getStatusIconClass(p.status)">
+                </lucide-icon>
+                <span [ngClass]="getStatusBadgeClass(p.status)">
+                  {{ p.status }}
+                </span>
+              </div>
+            </td>
+
+            <td class="numeric-cell">{{ p.activeCampaigns }}</td>
+            <td class="numeric-cell">{{ p.totalCompletes }}</td>
+
+            <td>
+              <div class="quality-cell">
+                <span>{{ p.quality }}</span>
+                @if(p.qualityDot) { <span class="quality-dot quality-dot--green">
+                </span>
+              }
+              </div>
+            </td>
+
+            <td class="numeric-cell">{{ p.avgCpi }}</td>
+
+            <td>
+              <div class="actions-cell">
+                @for(icon of actionIcons; track $index) {<button class="icon-button">
+                  <lucide-icon [name]="icon"></lucide-icon>
+                </button>
+              }
+              </div>
+            </td>
+          </tr>
+        }
+        </tbody>
+      </table>
+    </div>
+  </div>
+</main>

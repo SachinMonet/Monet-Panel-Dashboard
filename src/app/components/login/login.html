@@ -1,0 +1,59 @@
+<div class="login-wrapper">
+  <div class="login-card">
+    <div class="login-header">
+      <div class="logo-circle">
+        <span>✦</span>
+      </div>
+         <h1>Monet Panel Dashboard</h1>
+      <h1>Welcome back</h1>
+      <p>Sign in to access your dashboard</p>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="submit()" class="login-form">
+      <div class="field">
+        <label>Email</label>
+        <input
+          type="email"
+          formControlName="email"
+          placeholder="you@example.com"
+        />
+      @if(form.get('email')?.touched && form.get('email')?.invalid){  <div class="error" >
+          Please enter a valid email.
+        </div>
+      }
+      </div> 
+
+      <div class="field">
+        <label>Password</label>
+        <input
+          type="password"
+          formControlName="password"
+          placeholder="••••••••"
+        />
+      @if(form.get('password')?.touched && form.get('password')?.invalid){ <div class="error" >
+          Password is required.
+        </div>
+      }
+      </div>
+
+    @if(error){ <div class="error global" >
+        {{ error }}
+      </div>
+    }
+
+      <button
+        class="btn-primary"
+        type="submit"
+        [disabled]="loading"
+      >
+       @if(!loading) {<span >Sign in</span>}
+        @if(loading){<span class="spinner"></span>}
+      </button>
+    </form>
+
+    <div class="login-footer">
+      <p>Forgot your password? Contact your admin.</p>
+    </div>
+  </div>
+</div>
+

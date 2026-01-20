@@ -1,0 +1,259 @@
+.notfound-wrapper {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at top, #0f172a, #020617);
+  color: #e5e7eb;
+  padding: 2rem;
+}
+
+.notfound-inner {
+  max-width: 900px;
+  width: 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+  align-items: center;
+  gap: 3rem;
+
+  @media (max-width: 768px) {
+    grid-template-columns: minmax(0, 1fr);
+    text-align: center;
+  }
+}
+
+/* Illustration */
+.notfound-illustration {
+  position: relative;
+  width: 260px;
+  height: 260px;
+  margin: 0 auto;
+}
+
+.orbit {
+  position: absolute;
+  border-radius: 999px;
+  border: 1px dashed rgba(148, 163, 184, 0.3);
+  animation: spin-linear 18s linear infinite;
+}
+
+.orbit-outer {
+  inset: 0;
+}
+
+.orbit-middle {
+  inset: 22px;
+  animation-duration: 12s;
+}
+
+.orbit-inner {
+  inset: 44px;
+  animation-duration: 8s;
+}
+
+/* Planet */
+.planet {
+  position: absolute;
+  inset: 50%;
+  transform: translate(-50%, -50%);
+  width: 110px;
+  height: 110px;
+  border-radius: 999px;
+  background: radial-gradient(circle at 30% 20%, #38bdf8, #0ea5e9 45%, #0369a1);
+  box-shadow:
+    0 0 40px rgba(56, 189, 248, 0.8),
+    0 0 80px rgba(59, 130, 246, 0.5);
+  overflow: hidden;
+}
+
+.planet .shine {
+  position: absolute;
+  top: -20%;
+  left: -20%;
+  width: 60%;
+  height: 60%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.8), transparent);
+  opacity: 0.7;
+  animation: move-shine 6s ease-in-out infinite;
+}
+
+/* Asteroids */
+.asteroid {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  background: #fbbf24;
+  box-shadow: 0 0 10px rgba(251, 191, 36, 0.8);
+  opacity: 0.8;
+}
+
+.asteroid-1 {
+  top: 10%;
+  left: 70%;
+  animation: float-orbit-1 7s linear infinite;
+}
+
+.asteroid-2 {
+  bottom: 18%;
+  left: 8%;
+  animation: float-orbit-2 9s linear infinite;
+}
+
+.asteroid-3 {
+  top: 55%;
+  right: 5%;
+  width: 8px;
+  height: 8px;
+  animation: float-orbit-3 6s linear infinite;
+}
+
+/* 404 numbers */
+.number {
+  position: absolute;
+  top: 50%;
+  font-size: 5rem;
+  font-weight: 700;
+  transform: translateY(-50%);
+  color: rgba(15, 23, 42, 0.85);
+  text-shadow:
+    0 0 10px rgba(15, 23, 42, 0.6),
+    0 0 30px rgba(15, 23, 42, 0.9);
+}
+
+.number-4.left {
+  left: -20px;
+  animation: float-y 4s ease-in-out infinite;
+}
+
+.number-4.right {
+  right: -20px;
+  animation: float-y 4s ease-in-out infinite reverse;
+}
+
+/* Text block */
+.notfound-text h1 {
+  font-size: 2.25rem;
+  line-height: 1.1;
+  font-weight: 700;
+  color: #f9fafb;
+  margin-bottom: 0.75rem;
+}
+
+.notfound-text p {
+  font-size: 0.95rem;
+  color: #9ca3af;
+  max-width: 26rem;
+
+  @media (max-width: 768px) {
+    margin: 0 auto;
+  }
+}
+
+/* Button */
+.btn-primary {
+  margin-top: 1.5rem;
+  padding: 0.6rem 1.5rem;
+  border-radius: 999px;
+  border: none;
+  background: linear-gradient(135deg, #3b82f6, #06b6d4);
+  color: #f9fafb;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  box-shadow:
+    0 10px 25px rgba(59, 130, 246, 0.4),
+    0 0 20px rgba(56, 189, 248, 0.6);
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease,
+    filter 0.15s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.05);
+    box-shadow:
+      0 16px 30px rgba(59, 130, 246, 0.6),
+      0 0 28px rgba(56, 189, 248, 0.9);
+  }
+
+  &:active {
+    transform: translateY(0);
+    box-shadow:
+      0 6px 16px rgba(59, 130, 246, 0.5),
+      0 0 18px rgba(56, 189, 248, 0.7);
+  }
+}
+
+/* Animations */
+@keyframes spin-linear {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes move-shine {
+  0% {
+    transform: translate(-10%, -10%) scale(0.9);
+    opacity: 0.8;
+  }
+  50% {
+    transform: translate(10%, 10%) scale(1.05);
+    opacity: 0.4;
+  }
+  100% {
+    transform: translate(-10%, -10%) scale(0.9);
+    opacity: 0.8;
+  }
+}
+
+@keyframes float-orbit-1 {
+  0% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(8px, -6px);
+  }
+  100% {
+    transform: translate(0, 0);
+  }
+}
+
+@keyframes float-orbit-2 {
+  0% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(-6px, 8px);
+  }
+  100% {
+    transform: translate(0, 0);
+  }
+}
+
+@keyframes float-orbit-3 {
+  0% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(4px, -4px);
+  }
+  100% {
+    transform: translate(0, 0);
+  }
+}
+
+@keyframes float-y {
+  0% {
+    transform: translateY(-50%) translateY(0);
+  }
+  50% {
+    transform: translateY(-50%) translateY(-10px);
+  }
+  100% {
+    transform: translateY(-50%) translateY(0);
+  }
+}

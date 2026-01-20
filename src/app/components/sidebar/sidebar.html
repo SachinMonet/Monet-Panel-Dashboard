@@ -1,0 +1,22 @@
+<aside class="sidebar">
+  <div class="sidebar__header">
+    <h1 class="sidebar__title">Panel Management</h1>
+    <p class="sidebar__version">V0.2</p>
+  </div>
+  <nav class="sidebar-nav">
+@for (item of navItems; track item.route) {
+  <button
+    class="nav-item"
+    [ngClass]="{ 'nav-item--active': item.route === activeRoute }"
+    (click)="setActive(item.route)"
+    type="button"
+  >
+    <span class="nav-item__icon">
+      <lucide-icon [name]="item.icon"></lucide-icon>
+    </span>
+
+    <span class="nav-item__label">{{ item.label }}</span>
+  </button>
+}
+
+  </nav>

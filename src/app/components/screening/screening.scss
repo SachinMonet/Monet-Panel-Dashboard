@@ -1,0 +1,25 @@
+html,
+body {
+  height: 100%;
+  margin: 0;
+  //overflow: hidden;
+}
+
+.app-container {
+  display: flex;
+  height: 100vh;        /* full viewport */
+  width: 100%;
+ // overflow: hidden;
+}
+
+app-sidebar {
+  flex: 0 0 260px;      /* fixed sidebar width */
+  /* or width: 260px; */
+  //overflow: hidden;
+}
+
+.app-content {
+  flex: 1 1 auto;       /* take remaining space */
+  overflow: hidden;
+  min-width: 0;         /* allow content to shrink */
+}

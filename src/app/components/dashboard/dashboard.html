@@ -1,0 +1,242 @@
+<div class="dashboard-root">
+  <div class="dashboard-shell">
+    <!-- Header -->
+    <!-- <header class="header">
+      <div class="header__left">
+        <div class="header__logo">
+          <span>PM</span>
+        </div>
+        <h1 class="header__title">Campaign Dashboard</h1>
+      </div>
+
+      <div class="header__right">
+        <button class="btn btn--primary">
+          + New Campaign
+        </button>
+
+        <button class="icon-btn" title="Settings">
+          <lucide-icon name="settings" class="icon"></lucide-icon>
+        </button>
+
+        <div class="header__avatar">
+          <span>JD</span>
+        </div>
+      </div>
+    </header> -->
+    <header class="header">
+  <div class="header__left">
+    <div class="header__logo">
+      <span>PM</span>
+    </div>
+    <h1 class="header__title">Campaign Dashboard</h1>
+  </div>
+
+  <div class="header__right">
+    <button class="btn btn--primary" (click)="createNewCampaign()">
+      + New Campaign
+    </button>
+
+    <button class="icon-btn" title="Settings">
+      <lucide-icon name="settings" class="icon"></lucide-icon>
+    </button>
+
+    <!-- Avatar with Dropdown Menu -->
+    <div class="header__profile">
+      <button 
+        class="header__avatar"
+        (click)="toggleProfileMenu()"
+        [class.header__avatar--active]="showProfileMenu"
+      >
+        <span>JD</span>
+      </button>
+
+      <!-- Dropdown Menu -->
+      @if (showProfileMenu) {
+        <div class="profile-menu" [@slideDown]>
+          <div class="profile-menu__header">
+            <div class="profile-menu__user">
+              <div class="profile-menu__avatar-lg">JD</div>
+              <div>
+                <p class="profile-menu__name">John Doe</p>
+                <p class="profile-menu__email">john.doe@company.com</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="profile-menu__divider"></div>
+
+          <button 
+            class="profile-menu__item"
+            (click)="closeProfileMenu()"
+          >
+            <lucide-icon name="user" class="profile-menu__icon"></lucide-icon>
+            <span>My Profile</span>
+          </button>
+
+          <button 
+            class="profile-menu__item"
+            (click)="closeProfileMenu()"
+          >
+            <lucide-icon name="settings" class="profile-menu__icon"></lucide-icon>
+            <span>Settings</span>
+          </button>
+
+          <button 
+            class="profile-menu__item"
+            (click)="closeProfileMenu()"
+          >
+            <lucide-icon name="help-circle" class="profile-menu__icon"></lucide-icon>
+            <span>Help & Support</span>
+          </button>
+
+          <div class="profile-menu__divider"></div>
+
+          <button 
+            class="profile-menu__item profile-menu__item--danger"
+            (click)="logout()"
+          >
+            <lucide-icon name="log-out" class="profile-menu__icon"></lucide-icon>
+            <span>Logout</span>
+          </button>
+        </div>
+      }
+    </div>
+  </div>
+</header>
+
+
+    <!-- Tabs -->
+    <div class="tabs-header">
+      <div class="tabs">
+        @for (tab of tabs; track tab) {
+          <button
+            class="tabs__item"
+            [class.tabs__item--active]="activeTab === tab"
+            (click)="setTab(tab)"
+          >
+            {{ tab }}
+          </button>
+        }
+      </div>
+    </div>
+
+    <main class="content">
+      <!-- Attention Required -->
+      @if (hasAlertCampaigns()) {
+        <section class="alert-card">
+          <h2 class="alert-card__title">
+            Attention Required – Slow Campaigns
+          </h2>
+
+          <div class="alert-list">
+            @for (campaign of campaigns; track campaign.id) {
+              @if (campaign.status === activeTab && campaign.isAlert) {
+                <div class="alert-row">
+                  <div class="alert-row__info">
+                    <div class="alert-row__name">
+                      {{ campaign.name }}
+                    </div>
+                    <div class="alert-row__meta">
+                      <span>{{ campaign.complete }}% Complete</span>
+                      @if (campaign.badge) {
+                        <span class="alert-row__badge">
+                          {{ campaign.badge }}
+                        </span>
+                      }
+                    </div>
+                  </div>
+
+                  <div class="alert-row__actions">
+                    @for (action of campaign.actions; track action.id) {
+                      <button
+                        class="btn btn--ghost"
+                        [title]="action.title"
+                        (click)="onAlertActionClick(action, campaign)"
+                      >
+                        <lucide-icon
+                          [name]="action.icon"
+                          class="icon icon--left"
+                        ></lucide-icon>
+                        <span>{{ action.label }}</span>
+                      </button>
+                    }
+                  </div>
+                </div>
+              }
+            }
+          </div>
+        </section>
+      }
+
+      <!-- Table -->
+      <section class="table-card">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Campaign Name</th>
+              <th class="table__col--progress">Progress</th>
+              <th>Velocity</th>
+              <th>Active Panels</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            @for (row of campaigns; track row.id; let i = $index) {
+              @if (row.status === activeTab) {
+                <tr [class.table__row--alt]="i % 2 === 1">
+                  <td>{{ row.name }}</td>
+
+                  <td>
+                    <div class="progress">
+                      <div class="progress__track">
+                        <div
+                          class="progress__indicator"
+                          [style.transform]="'translateX(' + (row.progress - 100) + '%)'"
+                        ></div>
+                      </div>
+                      <span class="progress__value">
+                        {{ row.progress }}%
+                      </span>
+                    </div>
+                  </td>
+
+                  <td>
+                    <span
+                      class="chip"
+                      [ngClass]="getVelocityClass(row.velocity)"
+                    >
+                      {{ row.velocity }}
+                    </span>
+                  </td>
+
+                  <td>{{ row.activePanels }}</td>
+                  <td>{{ row.status }}</td>
+
+                  <td>
+                    <div class="row-actions">
+                      @for (action of row.actions; track action.id) {
+                        <button
+                          class="icon-btn"
+                          [title]="action.title"
+                          (click)="onTableActionClick(action, row)"
+                          [attr.data-action]="action.id"
+                        >
+                          <lucide-icon
+                            [name]="action.icon"
+                            class="icon icon--small"
+                          ></lucide-icon>
+                        </button>
+                      }
+                    </div>
+                  </td>
+                </tr>
+              }
+            }
+          </tbody>
+        </table>
+      </section>
+    </main>
+  </div>
+</div>
