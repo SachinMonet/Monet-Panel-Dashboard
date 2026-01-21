@@ -61,7 +61,7 @@
 
                         <div class="panel-header">
                             <h2 class="panel-title">Panel Configuration</h2>
-                            <button class="btn-add-panel" type="button">
+                            <button class="btn-add-panel" type="button" (click)="addPanel()">
                                 <lucide-icon name="plus" class="icon-small"></lucide-icon> Add Panel
                             </button>
                         </div>
@@ -458,3 +458,9 @@
 </ng-template>
 
 }
+
+@if(isAddPanelOpen){<app-add-panel
+
+  (close)="closeAddPanel()"
+  (savePanel)="handlePanelSaved($event)"
+></app-add-panel>}

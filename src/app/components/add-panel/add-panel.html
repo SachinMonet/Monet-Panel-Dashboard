@@ -1,0 +1,180 @@
+<div class="dialog-backdrop">
+  <div class="dialog-content" role="dialog" aria-modal="true">
+
+    <header class="dialog-header">
+      <h2 class="dialog-title">Add Panel Provider</h2>
+      <p class="dialog-description">
+        Configure panel provider settings, qualifications, and quotas for your campaign.
+      </p>
+    </header>
+
+    <div class="dialog-steps">
+      @for (s of [1, 2, 3]; track s; let last = $last) {
+        <div class="step-group">
+          <div class="step-icon" 
+               [class.step-icon--active]="currentStep() >= s"
+               [class.step-icon--current]="currentStep() === s">
+            {{ s }}
+          </div>
+          <div class="step-label">
+            @switch (s) {
+              @case (1) { Choose Panel }
+              @case (2) { Qualifications }
+              @case (3) { Quotas }
+            }
+          </div>
+          @if (!last) { <div class="step-line" [class.step-line--active]="currentStep() > s"></div> }
+        </div>
+      }
+    </div>
+
+    <div class="dialog-body">
+      @switch (currentStep()) {
+
+        @case (1) {
+          <section class="step-content" [formGroup]="form">
+            <div class="form-grid">
+              
+              <div class="form-field full-width">
+                <label for="panel-provider" class="form-label">Choose Panel</label>
+                <select id="panel-provider" class="form-input" formControlName="panelProvider">
+                  <option value="" disabled selected>Select a provider</option>
+                  @for (d of panelProviders(); track d.id) {
+                    <option [value]="d.id">{{ d.name }}</option>
+                  }
+                </select>
+              </div>
+
+              <div class="form-field">
+                <label class="form-label" for="max-complete">
+                  Max Complete <span class="text-red-500">*</span>
+                </label>
+                <input id="max-complete" type="number" class="form-input" 
+                       placeholder="e.g. 500" formControlName="maxComplete" />
+              </div>
+
+              <div class="form-field">
+                <label class="form-label" for="cpi">
+                  CPI ($) <span class="text-red-500">*</span>
+                </label>
+                <div class="input-prefix-wrapper">
+                  <span class="prefix">$</span>
+                  <input id="cpi" type="number" step="0.01" class="form-input with-prefix" 
+                         placeholder="0.00" formControlName="cpi" />
+                </div>
+              </div>
+
+              <div class="form-field full-width">
+                <label class="form-label" for="entry-url">
+                  Entry URL <span class="text-red-500">*</span>
+                </label>
+                <input id="entry-url" type="text" class="form-input" 
+                       placeholder="https://panel.example.com/entry?survey_id=..." 
+                       formControlName="entryUrl" />
+              </div>
+
+            </div>
+          </section>
+        }
+
+        @case (2) {
+          <section class="step-content">
+            
+            <div class="search-container">
+              <i data-lucide="search" class="search-icon"></i>
+              <input 
+                type="text" 
+                class="search-input" 
+                placeholder="Search qualifications (e.g. Age, Gender)..."
+                [formControl]="searchControl"
+              />
+            </div>
+
+            <div class="questions-scroll-area">
+              <div class="questions-header-row">
+                <span>Available Questions</span>
+                <span class="badge-count">{{ filteredQuestions().length }} found</span>
+              </div>
+
+              <div class="questions-list">
+                @for (q of filteredQuestions(); track q.id) {
+                  <div class="question-card" [class.question-card--active]="openQuestionId() === q.id">
+                    
+                    <div class="question-main-row">
+                      <div class="question-info">
+                        <span class="question-title">{{ q.label }}</span>
+                        <span class="question-badge">{{ q.type }}</span>
+                      </div>
+                      <button type="button" class="btn btn-sm btn-outline" 
+                              (click)="toggleQuestion(q.id)">
+                        {{ openQuestionId() === q.id ? 'Close' : 'Select Options' }}
+                      </button>
+                    </div>
+
+                    @if (openQuestionId() === q.id) {
+                      <div class="options-panel">
+                        <div class="options-grid">
+                          @for (opt of questionOptions()[q.id]; track opt.id) {
+                            <label class="checkbox-card" [class.checked]="isOptionSelected(q.id, opt.id)">
+                              <input type="checkbox" class="hidden-checkbox"
+                                     [checked]="isOptionSelected(q.id, opt.id)"
+                                     (change)="toggleOption(q.id, opt.id)" />
+                              <div class="custom-checkbox">
+                                <i data-lucide="check" class="icon-check"></i>
+                              </div>
+                              <span class="option-text">{{ opt.label }}</span>
+                            </label>
+                          }
+                        </div>
+                      </div>
+                    }
+                  </div>
+                } @empty {
+                  <div class="empty-state">
+                    <p>No qualifications found matching "{{ searchControl.value }}".</p>
+                  </div>
+                }
+              </div>
+            </div>
+          </section>
+        }
+
+        @case (3) {
+          <section class="step-content centered-content">
+            <div class="placeholder-box">
+              <h3>Quota Configuration</h3>
+              <p>Review your target demographics and set specific limits.</p>
+              </div>
+          </section>
+        }
+      }
+    </div>
+
+    <footer class="dialog-actions">
+      <button type="button" class="btn btn-ghost" (click)="onBack()" [disabled]="currentStep() === 1">
+        Back
+      </button>
+
+      <div class="action-right">
+        <button type="button" class="btn btn-ghost" (click)="onCancel()">Cancel</button>
+        
+        @if (currentStep() < 3) {
+          <button type="button" class="btn btn-primary" 
+                  [disabled]="currentStep() === 1 && form.invalid"
+                  (click)="onNext()">
+            Next Step
+          </button>
+        } @else {
+          <button type="button" class="btn btn-primary" (click)="onFinish()">
+            Complete Setup
+          </button>
+        }
+      </div>
+    </footer>
+
+    <button type="button" class="dialog-close-icon" (click)="onCancel()" aria-label="Close">
+      <i data-lucide="x"></i>
+    </button>
+
+  </div>
+</div>

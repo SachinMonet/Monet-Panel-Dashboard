@@ -5,12 +5,13 @@ import { LucideAngularModule } from 'lucide-angular';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from "@angular/router";
 import { ApiService } from '../../core/services/api';
+import { AddPanel } from '../add-panel/add-panel';
 
 
 
 @Component({
   selector: 'app-create-campaigns',
-  imports: [CommonModule, LucideModule, LucideAngularModule, FormsModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, LucideModule, LucideAngularModule, FormsModule, ReactiveFormsModule, RouterLink,AddPanel],
   templateUrl: './create-campaigns.html',
   styleUrl: './create-campaigns.scss',
 })
@@ -106,14 +107,15 @@ steps: StepData[] = [
     controls: [
       {
         type: 'input',
-        inputType: 'number',
+        inputType: 'text',
         label: 'Panel 1 Target Completes',
         placeholder: '500',
+        defaultValue: 500,
         required: true,
         name: 'panel1Target',
         colSpan: 1,
         validators: [
-          { type: 'min', value: 0 },
+          // { type: 'min', value: 0 },
         ],
       },
       {
@@ -121,6 +123,7 @@ steps: StepData[] = [
         inputType: 'number',
         label: 'Panel 1 CPI ($)',
         placeholder: '2.50',
+        defaultValue: 2.50,
         required: true,
         name: 'panel1Cpi',
         colSpan: 1,
@@ -130,14 +133,15 @@ steps: StepData[] = [
       },
       {
         type: 'input',
-        inputType: 'number',
+        inputType: 'text',
         label: 'Panel 2 Target Completes',
         placeholder: '300',
+        defaultValue: 300,
         required: true,
         name: 'panel2Target',
         colSpan: 1,
         validators: [
-          { type: 'min', value: 0 },
+          // { type: 'min', value: 0 },
         ],
       },
       {
@@ -145,6 +149,7 @@ steps: StepData[] = [
         inputType: 'number',
         label: 'Panel 2 CPI ($)',
         placeholder: '2.80',
+        defaultValue: 2.80,
         required: true,
         name: 'panel2Cpi',
         colSpan: 1,
@@ -154,14 +159,15 @@ steps: StepData[] = [
       },
       {
         type: 'input',
-        inputType: 'number',
+        inputType: 'text',
         label: 'Panel 3 Target Completes',
         placeholder: '200',
+        defaultValue: 200,
         required: true,
         name: 'panel3Target',
         colSpan: 1,
         validators: [
-          { type: 'min', value: 0 },
+          // { type: 'min', value: 0 },
         ],
       },
       {
@@ -169,6 +175,7 @@ steps: StepData[] = [
         inputType: 'number',
         label: 'Panel 3 CPI ($)',
         placeholder: '3.00',
+        defaultValue: 3.00,
         required: true,
         name: 'panel3Cpi',
         colSpan: 1,
@@ -353,23 +360,23 @@ buildForm() {
       if (this.currentStep < this.totalSteps && this.isCurrentStepValid()) {
       this.currentStep++;
     }
-    if(number === 1){
-       console.log(number);
-    let param = {
-      campaignName: this.form.value.campaignName,
-      country_id: this.form.value.country,
-      language_id: this.form.value.language,
-      loi: this.form.value.loi,
-      ir: this.form.value.ir,
-      total_completes: this.form.value.targetCompletes,
-    }
-    console.log(this.form.value);
-    console.log("param", param);
-    this._api.post('survey/campaigns', param).subscribe((res: any) => {
-      this.campaignId = res.campaign_id
-      console.log(res);
-    })
-    }
+    // if(number === 1){
+    //    console.log(number);
+    // let param = {
+    //   campaignName: this.form.value.campaignName,
+    //   country_id: this.form.value.country,
+    //   language_id: this.form.value.language,
+    //   loi: this.form.value.loi,
+    //   ir: this.form.value.ir,
+    //   total_completes: this.form.value.targetCompletes,
+    // }
+    // console.log(this.form.value);
+    // console.log("param", param);
+    // this._api.post('survey/campaigns', param).subscribe((res: any) => {
+    //   this.campaignId = res.campaign_id
+    //   console.log(res);
+    // })
+    // }
   }
 
   previousStep() {
@@ -398,6 +405,15 @@ buildForm() {
   setAllocationMode(mode: 'manual' | 'auto') {
     console.log('Setting allocation mode to:', mode);
     this.allocationMode = mode;
+    if (mode === 'manual') {
+      this.form.get('panel1Target')?.enable();
+      this.form.get('panel2Target')?.enable();
+      this.form.get('panel3Target')?.enable();
+    } else {
+      this.form.get('panel1Target')?.disable();
+      this.form.get('panel2Target')?.disable();
+      this.form.get('panel3Target')?.disable();
+    }
   }
 
   get allocatedTotal(): number {
@@ -414,6 +430,24 @@ buildForm() {
 
   get allocationDiff(): number {
     return this.allocatedTotal - this.targetTotal;
+  }
+
+ 
+   isAddPanelOpen = false;
+
+  addPanel() {
+    this.isAddPanelOpen = true;
+    console.log('Adding panel...');
+  }
+
+  closeAddPanel() {
+    this.isAddPanelOpen = false;
+  }
+
+  handlePanelSaved(panelData: any) {
+    // Use the data (push to panels list, etc.)
+    console.log('Saved panel', panelData);
+    this.isAddPanelOpen = false;
   }
 
 }
