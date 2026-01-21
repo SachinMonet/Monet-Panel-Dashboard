@@ -1,3 +1,14 @@
+@if (isLoading) {
+<div class="loader-wrapper">
+    <div class="loader-container">
+        <div class="loader-dot"></div>
+        <div class="loader-dot"></div>
+        <div class="loader-dot"></div>
+    </div>
+    <p class="loader-text">Loading...</p>
+</div>
+} @else {
+
 <div class="campaign-container">
     <div class="campaign-shell">
 
@@ -17,9 +28,10 @@
                 <button class="campaign-step" type="button" disabled
                     [class.campaign-step--active]="isStepActive(step.stepNumber)"
                     [class.campaign-step--completed]="isStepCompleted(step.stepNumber)">
-
-                    <div class="campaign-step__circle"
-                        [class.campaign-step__circle--active]="isStepActive(step.stepNumber) || isStepCompleted(step.stepNumber)">
+                    <div class="campaign-step__circle" [class.campaign-step__circle--active]="
+                  isStepActive(step.stepNumber) ||
+                  isStepCompleted(step.stepNumber)
+                ">
                         @if (isStepCompleted(step.stepNumber)) {
                         <span>{{ step.stepNumber }}</span>
 
@@ -30,7 +42,9 @@
                     <p class="campaign-step__label">{{ step.stepName }}</p>
                 </button>
 
-                @if (!last) { <div class="campaign-steps__divider"></div> }
+                @if (!last) {
+                <div class="campaign-steps__divider"></div>
+                }
                 }
             </div>
         </div>
@@ -250,7 +264,7 @@
                                 </div>
                             </div>
 
-                            <div class="review-card">
+                            <!-- <div class="review-card">
                                 <form [formGroup]="form">
                                     <div class="form-checkbox">
                                         <input class="form-checkbox__input" type="checkbox" id="confirmDetails"
@@ -264,7 +278,7 @@
                                     <span class="form-error">Confirmation is required</span>
                                     }
                                 </form>
-                            </div>
+                            </div> -->
                         </div>
 
                         <div class="review-actions">
@@ -282,15 +296,16 @@
                         @for (control of currentStepData.controls; track control.name) {
                         <div class="form-field" [class.form-field--full]="control.colSpan === 2"
                             [class.form-field--half]="control.colSpan === 1">
-
                             @switch (control.type) {
 
                             @case ('input') {
                             <label class="form-label" [for]="control.name">
-                                {{ control.label }} @if (control.required) { <span class="form-label__required">*</span>
+                                {{ control.label }}
+                                @if (control.required) {
+                                <span class="form-label__required">*</span>
                                 }
                             </label>
-                            <input class="form-input" [id]="control.name" type="text"
+                            <input class="form-input" [id]="control.name" [type]="control.inputType || 'text'"
                                 [placeholder]="control.placeholder || ''" [formControl]="getControl(control.name)" />
                             }
 
@@ -302,19 +317,27 @@
                                 }
                             </label>
                             <select class="form-select" [id]="control.name" [formControl]="getControl(control.name)">
-                                <option selected disabled value="">{{ control.placeholder || 'Select option' }}</option>
+                                <option selected disabled value="">
+                                    {{ control.placeholder || 'Select option' }}
+                                </option>
 
                                 @if (control.name === 'language') {
                                 @for (lang of languages; track lang.id) {
-                                <option [value]="lang.id">{{ lang.name }}</option>
+                                <option [value]="lang.id">
+                                    {{ lang.name }}
+                                </option>
                                 }
                                 } @else if (control.name === 'country') {
                                 @for (country of countries; track country.id) {
-                                <option [value]="country.id">{{ country.name }}</option>
+                                <option [value]="country.id">
+                                    {{ country.name }}
+                                </option>
                                 }
                                 } @else if (control.options && control.options.length > 0) {
                                 @for (option of control.options; track $index) {
-                                <option [value]="option">{{ option }}</option>
+                                <option [value]="option">
+                                    {{ option }}
+                                </option>
                                 }
                                 }
                             </select>
@@ -322,7 +345,9 @@
 
                             @case ('textarea') {
                             <label class="form-label" [for]="control.name">
-                                {{ control.label }} @if (control.required) { <span class="form-label__required">*</span>
+                                {{ control.label }}
+                                @if (control.required) {
+                                <span class="form-label__required">*</span>
                                 }
                             </label>
                             <textarea class="form-textarea" [id]="control.name" rows="4"
@@ -335,15 +360,19 @@
                                 <input class="form-checkbox__input" type="checkbox" [id]="control.name"
                                     [formControl]="getControl(control.name)" />
                                 <label class="form-checkbox__label" [for]="control.name">
-                                    {{ control.label }} @if (control.required) { <span
-                                        class="form-label__required">*</span> }
+                                    {{ control.label }}
+                                    @if (control.required) {
+                                    <span class="form-label__required">*</span>
+                                    }
                                 </label>
                             </div>
                             }
 
                             @case ('radio') {
                             <label class="form-label">
-                                {{ control.label }} @if (control.required) { <span class="form-label__required">*</span>
+                                {{ control.label }}
+                                @if (control.required) {
+                                <span class="form-label__required">*</span>
                                 }
                             </label>
                             <div class="form-radio-group">
@@ -351,35 +380,67 @@
                                 <div class="form-radio">
                                     <input class="form-radio__input" type="radio" [id]="control.name + '-' + option"
                                         [value]="option" [formControl]="getControl(control.name)" />
-                                    <label class="form-radio__label" [for]="control.name + '-' + option">{{ option
-                                        }}</label>
+                                    <label class="form-radio__label" [for]="control.name + '-' + option">
+                                        {{ option }}
+                                    </label>
                                 </div>
                                 }
                             </div>
                             }
                             }
 
+                            <!-- @if (form.get(control.name!)?.touched &&
+                            form.get(control.name!)?.invalid) {
+                            <span class="form-error">
+                                {{ control.label }} is required
+                            </span>
+                            } -->
                             @if (form.get(control.name!)?.touched && form.get(control.name!)?.invalid) {
-                            <span class="form-error">{{ control.label }} is required</span>
+                            @let ctrl = form.get(control.name!)!;
+                            @if (ctrl.hasError('required')) {
+                            <span class="form-error">
+                                {{ control.label }} is required
+                            </span>
+                            } @else if (ctrl.hasError('min')) {
+                            <span class="form-error">
+                                {{ control.label }} must be at least {{ ctrl.getError('min').min }}
+                            </span>
+                            } @else if (ctrl.hasError('max')) {
+                            <span class="form-error">
+                                {{ control.label }} must be at most {{ ctrl.getError('max').max }}
+                            </span>
+                            } @else {
+                            <span class="form-error">
+                                {{ control.label }} is invalid
+                            </span>
                             }
+                            }
+
                         </div>
                         }
                     </div>
                 </form>
                 }
-                } @if (currentStepData.stepNumber !== 4) {
+                }
+
+                @if (currentStepData.stepNumber !== 4) {
                 <div class="campaign-form__actions">
                     @if (currentStep > 1) {
-                    <button class="btn btn--secondary" (click)="previousStep()">Previous</button>
+                    <button class="btn btn--secondary" (click)="previousStep()">
+                        Previous
+                    </button>
                     }
-                    @if (currentStep < totalSteps) { <button class="btn btn--primary" (click)="nextStep()"
-                        [disabled]="!isCurrentStepValid()">Continue</button>
+                    @if (currentStep < totalSteps) { <button class="btn btn--primary"
+                        (click)="nextStep(currentStepData.stepNumber)" [disabled]="!isCurrentStepValid()">
+                        Continue
+                        </button>
                         } @else {
-                        <button class="btn btn--primary" (click)="submitForm()" [disabled]="!form.valid">Submit</button>
+                        <button class="btn btn--primary" (click)="submitForm()" [disabled]="!form.valid">
+                            Submit
+                        </button>
                         }
                 </div>
                 }
-
             </div>
         </main>
     </div>
@@ -387,9 +448,13 @@
 
 <ng-template #panelActions>
     <div class="actions">
-        <button class="action-btn" type="button" title="Edit"><lucide-icon name="square-pen"
-                class="icon-tiny"></lucide-icon></button>
-        <button class="action-btn" type="button" title="Pause"><lucide-icon name="pause"
-                class="icon-tiny"></lucide-icon></button>
+        <button class="action-btn" type="button" title="Edit">
+            <lucide-icon name="square-pen" class="icon-tiny"></lucide-icon>
+        </button>
+        <button class="action-btn" type="button" title="Pause">
+            <lucide-icon name="pause" class="icon-tiny"></lucide-icon>
+        </button>
     </div>
 </ng-template>
+
+}
