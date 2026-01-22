@@ -1,44 +1,124 @@
-// --- 1. Variables & Design Tokens ---
+// =========================================
+// 1. Variables & Design Tokens
+// =========================================
 :host {
   --primary: #111827;
   --primary-hover: #1f2937;
   --primary-fg: #ffffff;
-  
+
   --surface: #ffffff;
   --surface-muted: #f9fafb;
   --surface-hover: #f3f4f6;
-  
+
   --border: #e5e7eb;
   --border-focus: #4f46e5;
-  
+  --border-radius: 0.375rem; // 6px
+  --radius-lg: 0.75rem;      // 12px
+
   --text-main: #111827;
   --text-muted: #6b7280;
   --text-danger: #dc2626;
 
-  --radius-md: 0.375rem;   // 6px
-  --radius-lg: 0.75rem;    // 12px
   --shadow-lg: 0 10px 40px -10px rgba(0, 0, 0, 0.15);
-  
   --transition: 0.15s ease-in-out;
 }
 
-// --- 2. Dialog Layout (Core) ---
+// =========================================
+// 2. Base Utilities & Animations
+// =========================================
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.centered-content {
+  @include flex-center;
+  height: 100%;
+}
+
+// Animations
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+@keyframes slideDown { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+
+// =========================================
+// 3. Inputs & Forms
+// =========================================
+.input-base {
+  width: 100%;
+  height: 2.75rem;
+  padding: 0 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--border-radius);
+  font-size: 0.875rem;
+  color: var(--text-main);
+  background: var(--surface);
+  transition: var(--transition);
+  box-sizing: border-box;
+
+  &:focus {
+    outline: none;
+    border-color: var(--border-focus);
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+  }
+
+  &::placeholder { color: #9ca3af; }
+  &:disabled { background-color: var(--surface-muted); cursor: not-allowed; opacity: 0.7; }
+}
+
+.form-input, select.form-input { @extend .input-base; }
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+  .full-width { grid-column: 1 / -1; }
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  width: 100%;
+  .form-label { font-size: 0.875rem; font-weight: 500; color: var(--text-main); }
+  .required { color: var(--text-danger); }
+}
+
+.input-prefix-wrapper {
+  position: relative;
+  width: 100%;
+  .prefix {
+    position: absolute;
+    left: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+    font-size: 0.875rem;
+    pointer-events: none;
+    z-index: 2;
+  }
+  input { @extend .input-base; padding-left: 1.75rem; }
+}
+
+// =========================================
+// 4. Dialog Layout (Backdrop, Content, Steps)
+// =========================================
 .dialog-backdrop {
   position: fixed;
   inset: 0;
   z-index: 50;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  @include flex-center;
   background: rgba(15, 23, 42, 0.4);
-  backdrop-filter: blur(2px); // Professional touch
+  backdrop-filter: blur(2px);
   animation: fadeIn 0.2s ease-out;
 }
 
 .dialog-content {
   position: relative;
   width: 95%;
-  max-width: 42rem; // ~672px
+  min-width: 320px;
+  max-width: 42rem;
   max-height: 85vh;
   display: flex;
   flex-direction: column;
@@ -49,339 +129,84 @@
   overflow: hidden;
 }
 
-// --- 3. Header ---
 .dialog-header {
   padding: 1.5rem 1.5rem 1rem;
-  border-bottom: 1px solid transparent; // visual spacing
-
-  .dialog-title {
-    font-size: 1.25rem;
-    font-weight: 600;
-    color: var(--text-main);
-    margin: 0 0 0.5rem;
-  }
-
-  .dialog-description {
-    font-size: 0.875rem;
-    color: var(--text-muted);
-    line-height: 1.5;
-    margin: 0;
-  }
+  .dialog-title { font-size: 1.25rem; font-weight: 600; color: var(--text-main); margin: 0 0 0.5rem; }
+  .dialog-description { font-size: 0.875rem; color: var(--text-muted); line-height: 1.5; margin: 0; }
 }
 
-// --- 4. Stepper ---
+.dialog-close-icon {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 50%;
+  &:hover { background: var(--surface-hover); color: var(--text-main); }
+}
+
+// Stepper
 .dialog-steps {
   display: flex;
   justify-content: center;
   padding: 0 1.5rem 1.5rem;
   border-bottom: 1px solid var(--border);
-  background: var(--surface); // Sticky header effect if needed
+  background: var(--surface);
 }
 
 .step-group {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  
-  &:not(:last-child) {
-    flex: 1; // Stretch lines
-    margin-right: 0.75rem;
-  }
+  &:not(:last-child) { flex: 1; margin-right: 0.75rem; }
 }
 
 .step-icon {
   width: 2rem;
   height: 2rem;
   border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  @include flex-center;
   font-size: 0.875rem;
   font-weight: 600;
   background: var(--surface-muted);
   color: var(--text-muted);
   border: 1px solid var(--border);
   transition: var(--transition);
+  flex-shrink: 0;
 
-  &--active {
-    background: var(--primary);
-    color: var(--primary-fg);
-    border-color: var(--primary);
-  }
-
-  &--current {
-    box-shadow: 0 0 0 3px rgba(17, 24, 39, 0.15); // Ring effect
-  }
+  &--active { background: var(--primary); color: var(--primary-fg); border-color: var(--primary); }
+  &--current { box-shadow: 0 0 0 3px rgba(17, 24, 39, 0.15); }
 }
 
-.step-label {
-  font-size: 0.75rem;
-  font-weight: 500;
-  color: var(--text-main);
-  white-space: nowrap;
-}
+.step-label { font-size: 0.75rem; font-weight: 500; color: var(--text-main); white-space: nowrap; }
+.step-line { flex: 1; height: 2px; background: var(--border); border-radius: 99px; transition: var(--transition); &--active { background: var(--primary); } }
 
-.step-line {
-  flex: 1;
-  height: 2px;
-  background: var(--border);
-  border-radius: 99px;
-  transition: var(--transition);
-
-  &--active {
-    background: var(--primary);
-  }
-}
-
-// --- 5. Dialog Body (Scrollable) ---
+// Dialog Body Container
 .dialog-body {
   flex: 1;
-  overflow-y: auto;
-  padding: 1.5rem;
+  overflow: hidden; // Key for inner scrolling
   display: flex;
   flex-direction: column;
-}
-
-// Step 1: Form Grid
-.form-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr; // 2 Columns
-  gap: 1.25rem;
-
-  .full-width {
-    grid-column: span 2;
-  }
-}
-
-.form-field {
-  display: flex;
-  flex-direction: column;
-  gap: 0.375rem;
-
-  .form-label {
-    font-size: 0.875rem;
-    font-weight: 500;
-    color: var(--text-main);
-  }
-}
-
-.form-input, select.form-input {
-  height: 2.5rem;
-  padding: 0 0.75rem;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  font-size: 0.875rem;
-  color: var(--text-main);
-  background: var(--surface);
-  transition: var(--transition);
   width: 100%;
-
-  &:focus {
-    outline: none;
-    border-color: var(--border-focus);
-    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
-  }
-
-  &::placeholder {
-    color: #9ca3af;
-  }
 }
 
-// Currency Prefix Hack
-.input-prefix-wrapper {
-  position: relative;
-  
-  .prefix {
-    position: absolute;
-    left: 0.75rem;
-    top: 50%;
-    transform: translateY(-50%);
-    color: var(--text-muted);
-    font-size: 0.875rem;
-    pointer-events: none;
-  }
-  
-  input {
-    padding-left: 1.75rem; // Make room for $
-  }
-}
-
-// Step 2: Qualifications (Cards)
-.search-container {
-  position: relative;
-  margin-bottom: 1rem;
-
-  .search-icon {
-    position: absolute;
-    left: 0.75rem;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 1.25rem;
-    height: 1.25rem;
-    color: var(--text-muted);
-  }
-
-  .search-input {
-    width: 100%;
-    padding-left: 2.5rem;
-    height: 2.75rem;
-    border: 1px solid var(--border);
-    border-radius: var(--radius-md);
-    
-    &:focus {
-      border-color: var(--border-focus);
-      outline: none;
-    }
-  }
-}
-
-.questions-header-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 0.75rem;
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: var(--text-muted);
-
-  .badge-count {
-    background: var(--surface-muted);
-    padding: 0.125rem 0.5rem;
-    border-radius: 99px;
-    font-size: 0.75rem;
-  }
-}
-
-.questions-list {
+.step-content {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
-}
-
-.question-card {
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  background: var(--surface);
-  transition: var(--transition);
+  height: 100%;
   overflow: hidden;
-
-  &--active {
-    border-color: var(--text-main);
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-  }
-
-  .question-main-row {
-    padding: 0.75rem 1rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    cursor: pointer;
-    
-    &:hover {
-      background: var(--surface-muted);
-    }
-  }
-
-  .question-info {
-    display: flex;
-    flex-direction: column;
-    
-    .question-title {
-      font-weight: 500;
-      color: var(--text-main);
-    }
-    
-    .question-badge {
-      font-size: 0.75rem;
-      color: var(--text-muted);
-      text-transform: capitalize;
-    }
-  }
+  padding: 1.5rem;
+  
+  // Reset padding for the specific flex-column variant
+  &.flex-column { padding: 0; }
 }
 
-.options-panel {
-  border-top: 1px solid var(--border);
-  background: var(--surface-muted);
-  padding: 1rem;
-  animation: slideDown 0.2s ease-out;
-}
-
-.options-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-  gap: 0.75rem;
-}
-
-// Checkbox Card (Modern Checkbox)
-.checkbox-card {
-  display: flex;
-  align-items: center;
-  gap: 0.625rem;
-  padding: 0.5rem;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  cursor: pointer;
-  transition: var(--transition);
-
-  &:hover {
-    border-color: #9ca3af;
-  }
-
-  &.checked {
-    background: #eff6ff; // Light blue bg
-    border-color: var(--border-focus);
-    
-    .custom-checkbox {
-      background: var(--border-focus);
-      border-color: var(--border-focus);
-      color: white;
-    }
-  }
-
-  .hidden-checkbox {
-    display: none; // Hide default browser checkbox
-  }
-
-  .custom-checkbox {
-    width: 1.125rem;
-    height: 1.125rem;
-    border: 1px solid #d1d5db;
-    border-radius: 4px;
-    background: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: var(--transition);
-
-    i {
-      width: 0.75rem;
-      height: 0.75rem;
-    }
-  }
-
-  .option-text {
-    font-size: 0.875rem;
-    color: var(--text-main);
-    user-select: none;
-  }
-}
-
-// --- 6. Footer & Actions ---
-.dialog-actions {
-  padding: 1rem 1.5rem;
-  border-top: 1px solid var(--border);
-  background: var(--surface-muted);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-
-  .action-right {
-    display: flex;
-    gap: 0.75rem;
-  }
-}
-
+// =========================================
+// 5. Buttons
+// =========================================
 .btn {
   display: inline-flex;
   align-items: center;
@@ -389,15 +214,12 @@
   padding: 0.5rem 1rem;
   font-size: 0.875rem;
   font-weight: 500;
-  border-radius: var(--radius-md);
+  border-radius: var(--border-radius);
   cursor: pointer;
   transition: var(--transition);
   border: 1px solid transparent;
-
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
+  white-space: nowrap;
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
 }
 
 .btn-primary {
@@ -409,60 +231,218 @@
 .btn-ghost {
   background: transparent;
   color: var(--text-muted);
-  &:hover { 
-    background: rgba(0,0,0,0.05); 
-    color: var(--text-main);
-  }
+  &:hover { background: rgba(0, 0, 0, 0.05); color: var(--text-main); }
 }
 
 .btn-outline {
   border-color: var(--border);
   background: var(--surface);
   color: var(--text-main);
-  &:hover { border-color: var(--text-muted); }
+  &:hover { border-color: var(--text-muted); background: var(--surface-muted); }
 }
 
-.btn-sm {
-  padding: 0.25rem 0.75rem;
-  font-size: 0.75rem;
-  height: auto;
+.btn-sm { padding: 0.25rem 0.75rem; font-size: 0.75rem; height: auto; }
+
+// =========================================
+// 6. Feature: Qualifications (Search, List, Cards)
+// =========================================
+.search-container {
+  flex-shrink: 0;
+  position: relative;
+  margin: 1rem;
+
+  .search-icon {
+    position: absolute;
+    left: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 1.25rem;
+    height: 1.25rem;
+    color: var(--text-muted);
+    z-index: 2;
+  }
+  .search-input { @extend .input-base; padding-left: 2.5rem; }
 }
 
-// --- 7. Utilities & Animations ---
-.dialog-close-icon {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
-  background: transparent;
-  border: none;
-  color: var(--text-muted);
-  cursor: pointer;
-  padding: 0.25rem;
-  border-radius: 50%;
-  
-  &:hover {
-    background: var(--surface-hover);
-    color: var(--text-main);
+.questions-scroll-area {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 1rem 1rem 1rem;
+}
+
+.questions-list { display: flex; flex-direction: column; gap: 0.75rem; }
+
+// Question Card
+.question-card {
+  border: 1px solid var(--border);
+  border-radius: var(--border-radius);
+  background: var(--surface);
+  transition: var(--transition);
+  overflow: hidden;
+  margin-bottom: 0.75rem;
+
+  &--active {
+    border-color: var(--text-main);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  }
+
+  .question-main-row {
+    padding: 0.75rem 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .question-info {
+    display: flex;
+    flex-direction: column;
+    .question-title { font-weight: 500; color: var(--text-main); font-size: 0.95rem; }
+    .question-badge { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; background: var(--surface-muted); padding: 2px 6px; border-radius: 4px; display: inline-block; width: fit-content; margin-top: 2px; }
   }
 }
 
-.centered-content {
+.row-actions { display: flex; align-items: center; gap: 0.5rem; }
+
+// The Toggle/Add Button (Matched to HTML class: .btn-toggle-add)
+.btn-toggle-add {
+  @include flex-center;
+  width: 2rem; // 32px
+  height: 2rem;
+  border-radius: 6px;
+  border: 1px solid #cbd5e1;
+  background-color: white;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  padding: 0;
+
+  // Icon
+  svg, i { width: 1.125rem; height: 1.125rem; }
+
+  &:hover {
+    border-color: #64748b;
+    background-color: var(--surface-muted);
+    color: var(--text-main);
+  }
+
+  // Active State (Green)
+  &.is-added {
+    background-color: #22c55e;
+    border-color: #16a34a;
+    color: white;
+    &:hover { background-color: #16a34a; }
+  }
+}
+
+// Inner Accordion Options
+.options-panel {
+  border-top: 1px solid var(--border);
+  background: var(--surface-muted);
+  padding: 1rem;
+  animation: slideDown 0.2s ease-out;
+}
+
+.options-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 0.75rem;
+}
+
+// Checkbox
+.checkbox-card {
+  display: flex;
   align-items: center;
-  justify-content: center;
-  height: 100%;
+  gap: 0.75rem;
+  padding: 0.6rem 0.75rem;
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: var(--transition);
+
+  &:hover { border-color: #9ca3af; }
+  &.checked {
+    background: #eff6ff;
+    border-color: var(--border-focus);
+    .custom-checkbox { background: var(--border-focus); border-color: var(--border-focus); color: white; }
+    .icon-check, svg { opacity: 1; }
+  }
+  
+  .hidden-checkbox { display: none; }
+  
+  .custom-checkbox {
+    width: 1.125rem;
+    height: 1.125rem;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    background: white;
+    @include flex-center;
+    transition: var(--transition);
+    flex-shrink: 0;
+    
+    .icon-check, svg { width: 0.75rem; height: 0.75rem; opacity: 0; transition: opacity 0.1s; }
+  }
+  
+  .option-text { font-size: 0.875rem; color: var(--text-main); user-select: none; }
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+// =========================================
+// 7. Feature: Footer Summary
+// =========================================
+.selection-summary-bar {
+  flex-shrink: 0;
+  background-color: #ffffff;
+  border-top: 1px solid var(--border);
+  padding: 1rem;
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.05);
+  max-height: 160px;
+  overflow-y: auto;
+  z-index: 10;
+
+  .summary-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+    .summary-label { font-weight: 600; color: #334155; font-size: 0.9rem; }
+    .summary-count { background: #0f172a; color: white; font-size: 0.75rem; padding: 2px 8px; border-radius: 12px; font-weight: 600; }
+  }
+
+  .summary-tags { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+
+  .summary-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #f1f5f9;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    padding: 4px 8px;
+    font-size: 0.8rem;
+
+    .tag-title { font-weight: 700; color: #334155; }
+    .tag-values { color: #64748b; max-width: 250px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .tag-remove {
+      @include flex-center;
+      background: none; border: none; padding: 2px;
+      cursor: pointer; color: #94a3b8;
+      &:hover { color: var(--text-danger); }
+      svg { width: 14px; height: 14px; }
+    }
+  }
 }
 
-@keyframes slideUp {
-  from { transform: translateY(20px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
-}
+// =========================================
+// 8. Footer Actions
+// =========================================
+.dialog-actions {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid var(--border);
+  background: var(--surface-muted);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 
-@keyframes slideDown {
-  from { opacity: 0; transform: translateY(-5px); }
-  to { opacity: 1; transform: translateY(0); }
+  .action-right { display: flex; gap: 0.75rem; }
 }

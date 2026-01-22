@@ -3,363 +3,296 @@ import { Component, computed, EventEmitter, inject, Output, signal } from '@angu
 import { FormBuilder, FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ApiService } from '../../core/services/api';
 import { toSignal } from '@angular/core/rxjs-interop';
-const   data = {
-  "status": true,
-  "data": [
-    {
-      "qs_id": 1,
-      "question": "Age",
-      "type": "range",
-      "options": [
-        {
-          "opt_id": 1,
-          "option_value": "18-24"
-        },
-        {
-          "opt_id": 2,
-          "option_value": "25-34"
-        },
-        {
-          "opt_id": 3,
-          "option_value": "35-44"
-        },
-        {
-          "opt_id": 4,
-          "option_value": "45-54"
-        },
-        {
-          "opt_id": 5,
-          "option_value": "55+"
-        }
-      ]
-    },
-    {
-      "qs_id": 2,
-      "question": "Gender",
-      "type": "single",
-      "options": [
-        {
-          "opt_id": 6,
-          "option_value": "Male"
-        },
-        {
-          "opt_id": 7,
-          "option_value": "Female"
-        },
-        {
-          "opt_id": 8,
-          "option_value": "Non-binary"
-        },
-        {
-          "opt_id": 9,
-          "option_value": "Prefer not to say"
-        }
-      ]
-    },
-    {
-      "qs_id": 3,
-      "question": "Employment Status",
-      "type": "single",
-      "options": [
-        {
-          "opt_id": 10,
-          "option_value": "Employed Full-time"
-        },
-        {
-          "opt_id": 11,
-          "option_value": "Employed Part-time"
-        },
-        {
-          "opt_id": 12,
-          "option_value": "Self-employed"
-        },
-        {
-          "opt_id": 13,
-          "option_value": "Unemployed"
-        },
-        {
-          "opt_id": 14,
-          "option_value": "Retired"
-        }
-      ]
-    },
-    {
-      "qs_id": 4,
-      "question": "Household Income",
-      "type": "range",
-      "options": [
-        {
-          "opt_id": 15,
-          "option_value": "\u003C$25k"
-        },
-        {
-          "opt_id": 16,
-          "option_value": "$25k-$50k"
-        },
-        {
-          "opt_id": 17,
-          "option_value": "$50k-$75k"
-        },
-        {
-          "opt_id": 18,
-          "option_value": "$75k-$100k"
-        },
-        {
-          "opt_id": 19,
-          "option_value": "\u003E$100k"
-        }
-      ]
-    },
-    {
-      "qs_id": 5,
-      "question": "Education Level",
-      "type": "single",
-      "options": [
-        {
-          "opt_id": 20,
-          "option_value": "High School"
-        },
-        {
-          "opt_id": 21,
-          "option_value": "Some College"
-        },
-        {
-          "opt_id": 22,
-          "option_value": "Bachelor's"
-        },
-        {
-          "opt_id": 23,
-          "option_value": "Master's"
-        },
-        {
-          "opt_id": 24,
-          "option_value": "Doctorate"
-        }
-      ]
-    }
-  ]
-}
-
-interface PanelProvider {
-  id: number | string;
-  name: string;
-}
-
-interface QuestionOption {
-  id: string;
-  label: string;
-}
-
-
-
-interface ApiOption {
+import { HttpClient } from '@angular/common/http';
+export interface ApiOption {
   opt_id: number;
   option_value: string;
 }
 
-interface ApiQuestion {
+export interface ApiQuestion {
   qs_id: number;
   question: string;
   type: string;
   options: ApiOption[];
 }
 
-interface Question {
+export interface UIQuestion {
   id: number;
   label: string;
   type: string;
 }
 
-interface Option {
+export interface UIOption {
   id: number;
   label: string;
 }
 
 @Component({
   selector: 'app-add-panel',
-  imports: [CommonModule,ReactiveFormsModule,FormsModule,],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule,],
   templateUrl: './add-panel.html',
   styleUrl: './add-panel.scss',
 })
 export class AddPanel {
-  data = data
+  private fb = inject(FormBuilder);
+  private apiService = inject(ApiService);
+   searchControl = new FormControl('');
+  private searchTerm = toSignal(
+    this.searchControl.valueChanges, 
+    { initialValue: '' }
+  );
 
-private fb = inject(FormBuilder);
-  private api = inject(ApiService);
-
-  // --- Outputs ---
-  @Output() close = new EventEmitter<void>();
-  @Output() savePanel = new EventEmitter<any>();
-
-  // --- 2. State Management (Signals) ---
-  currentStep = signal<number>(1);
-  openQuestionId = signal<string | null>(null); // For accordion
-  
-  // Data Signals
-  panelProviders = signal<PanelProvider[]>([]);
-  
-  // Selection State: Record<QuestionId, Set<OptionId>>
-  selectedOptions = signal<Record<string, Set<string>>>({});
-
-  // --- 3. Form Configuration ---
-  form = this.fb.group({
+  // Form Configuration
+  form: FormGroup = this.fb.group({
     panelProvider: ['', Validators.required],
-    maxComplete: [null, [Validators.required, Validators.min(1)]],
-    cpi: [null, [Validators.required, Validators.min(0)]],
-    entryUrl: ['', [Validators.required, Validators.pattern(/https?:\/\/.+/)]],
+    maxComplete: ['', [Validators.required, Validators.min(1)]],
+    cpi: ['', [Validators.required, Validators.min(0.01)]],
+    entryUrl: ['', [Validators.required, Validators.pattern('https?://.+')]]
   });
 
-  // Search Control
-  searchControl = new FormControl('');
-  // Convert RxJS stream to Signal for easy computing
-  searchQuery = toSignal(this.searchControl.valueChanges, { initialValue: '' });
+ 
 
-  // --- 4. Static Data (Could also come from API) ---
-  // Using readonly to prevent accidental mutation
-  readonly ALL_QUESTIONS: any[] = [
-    { id: 'age', label: 'Age', type: 'range' },
-    { id: 'gender', label: 'Gender', type: 'single' },
-    { id: 'employment_status', label: 'Employment Status', type: 'single' },
-    { id: 'household_income', label: 'Household Income', type: 'range' },
-    { id: 'education_level', label: 'Education Level', type: 'single' },
-  ];
+  // --- State Signals ---
+  currentStep = signal<number>(1);
+  openQuestionId = signal<number | null>(null);
 
-  readonly QUESTION_OPTIONS: Record<string, QuestionOption[]> = {
-    gender: [
-      { id: 'male', label: 'Male' },
-      { id: 'female', label: 'Female' },
-      { id: 'non_binary', label: 'Non-binary' },
-      { id: 'prefer_not_say', label: 'Prefer not to say' },
-    ],
-    employment_status: [
-      { id: 'employed', label: 'Employed' },
-      { id: 'unemployed', label: 'Unemployed' },
-      { id: 'self-employed', label: 'Self-employed' },
-      { id: 'retired', label: 'Retired' },
-    ],
-    // Add others...
-  };
+  // Data State
+  private rawQuestions = signal<ApiQuestion[]>([]);
+  panelProviders = signal<any[]>([]);
 
-  // Create a signal for options to use in template easily
-  questionOptions = signal(this.QUESTION_OPTIONS);
+  // Selection State
+  addedQuestionIds = signal<Set<number>>(new Set()); // The "Campaign" List
+  selectedOptions = signal<{ [questionId: number]: Set<number> }>({}); // The Checkbox State
 
-  // --- 5. Computed Signals (The Magic) ---
-  // Automatically updates when searchQuery changes
-  filteredQuestions = computed(() => {
-    const term = this.searchQuery()?.toLowerCase().trim();
-    if (!term) return this.ALL_QUESTIONS;
-    return this.ALL_QUESTIONS.filter(q => q.label.toLowerCase().includes(term));
+  // --- Computed Signals ---
+
+  // 1. Transform Raw Data for UI
+  questions = computed<UIQuestion[]>(() =>
+    this.rawQuestions().map(q => ({
+      id: q.qs_id,
+      label: q.question,
+      type: q.type
+    }))
+  );
+
+  // 2. Map Options for easy access
+  questionOptions = computed<{ [key: number]: UIOption[] }>(() => {
+    const map: { [key: number]: UIOption[] } = {};
+    this.rawQuestions().forEach(q => {
+      map[q.qs_id] = q.options.map(opt => ({
+        id: opt.opt_id,
+        label: opt.option_value
+      }));
+    });
+    return map;
   });
 
-  constructor() {
-    this.loadProviders();
+  // 3. Filter for Search
+  // filteredQuestions = computed(() => {
+  //   const term = this.searchControl.value?.toLowerCase() || '';
+  //   if (!term) return this.questions();
+
+  //   return this.questions().filter(q =>
+  //     q.label.toLowerCase().includes(term) || q.type.toLowerCase().includes(term)
+  //   );
+  // });
+
+  // 4. Summary Footer Data
+  selectedSummary = computed(() => {
+    const allQuestions = this.rawQuestions();
+    const selections = this.selectedOptions();
+    const addedIds = this.addedQuestionIds();
+
+    const summary: { id: number; title: string; options: string[] }[] = [];
+
+    addedIds.forEach(qId => {
+      const optionSet = selections[qId];
+      if (optionSet && optionSet.size > 0) {
+        const question = allQuestions.find(q => q.qs_id === qId);
+        if (question) {
+          summary.push({
+            id: qId,
+            title: question.question,
+            options: question.options
+              .filter(opt => optionSet.has(opt.opt_id))
+              .map(opt => opt.option_value)
+          });
+        }
+      }
+    });
+    return summary;
+  });
+
+  ngOnInit(): void {
+    this.loadInitialData();
   }
 
-  private loadProviders() {
-    this.api.get('panel-providers').subscribe({
+  // --- Data Loading ---
+  private loadInitialData(): void {
+    // Mock Data (Replace with real API call)
+    const mockData: ApiQuestion[] = [
+      { qs_id: 1, question: "Age", type: "range", options: [{ opt_id: 1, option_value: "18-24" }, { opt_id: 2, option_value: "25-34" }, { opt_id: 3, option_value: "35-44" }, { opt_id: 4, option_value: "45-54" }, { opt_id: 5, option_value: "55+" }] },
+      { qs_id: 2, question: "Gender", type: "single", options: [{ opt_id: 6, option_value: "Male" }, { opt_id: 7, option_value: "Female" }, { opt_id: 8, option_value: "Non-binary" }] },
+      { qs_id: 3, question: "Employment", type: "single", options: [{ opt_id: 10, option_value: "Full-time" }, { opt_id: 11, option_value: "Part-time" }, { opt_id: 12, option_value: "Unemployed" }] },
+      { qs_id: 4, question: "Education", type: "single", options: [{ opt_id: 13, option_value: "High school" }, { opt_id: 14, option_value: "College" }, { opt_id: 15, option_value: "Graduate" }] },
+      { qs_id: 5, question: "Location", type: "single", options: [{ opt_id: 16, option_value: "Metro" }, { opt_id: 17, option_value: "Non-metro" }] }
+    ];
+    this.rawQuestions.set(mockData);
+
+    // Load Providers
+    this.apiService.get('panel-providers').subscribe({
       next: (res: any) => this.panelProviders.set(res.data),
       error: (err) => console.error('Failed to load providers', err)
     });
   }
 
-  // --- 6. Event Handlers ---
+  // --- Core Logic ---
 
-  // Accordion Logic
-  toggleQuestion(questionId: string) {
-    this.openQuestionId.update(current => current === questionId ? null : questionId);
+  /**
+   * Master Toggle: Adds or Removes a question from the campaign.
+   * - Adding: Auto-selects ALL options if none were selected previously.
+   * - Removing: Completely wipes selection data for that question.
+   */
+  toggleAddQuestion(questionId: number, event?: Event): void {
+    event?.stopPropagation();
+
+    const isAdded = this.addedQuestionIds().has(questionId);
+
+    if (isAdded) {
+      // Logic: Remove
+      this.addedQuestionIds.update(ids => {
+        const newIds = new Set(ids);
+        newIds.delete(questionId);
+        return newIds;
+      });
+
+      // Cleanup selections
+      this.selectedOptions.update(opts => {
+        const newOpts = { ...opts };
+        delete newOpts[questionId];
+        return newOpts;
+      });
+
+    } else {
+      // Logic: Add
+      this.addedQuestionIds.update(ids => {
+        const newIds = new Set(ids);
+        newIds.add(questionId);
+        return newIds;
+      });
+
+      // Auto-Select All
+      this.selectAllOptions(questionId);
+    }
   }
 
-  // Checkbox Logic
-  toggleOption(questionId: string, optionId: string) {
-    this.selectedOptions.update(currentMap => {
-      // Create a shallow copy of the map to ensure immutability triggers change detection
-      const newMap = { ...currentMap };
-      
-      if (!newMap[questionId]) {
-        newMap[questionId] = new Set<string>();
-      }
+  /**
+   * Accordion Toggle
+   */
+  toggleAccordion(questionId: number): void {
+    this.openQuestionId.update(curr => curr === questionId ? null : questionId);
 
-      const set = newMap[questionId];
-      if (set.has(optionId)) {
-        set.delete(optionId);
-      } else {
-        set.add(optionId);
-      }
-      
-      return newMap;
+    // UX: If opening an un-added question, maybe we want to prepopulate? 
+    // Current logic: Only auto-selects if user clicks "+".
+    // If you want opening accordion to auto-select, call this.selectAllOptions(questionId) here.
+  }
+
+  /**
+   * Checkbox Toggle
+   */
+  toggleOption(questionId: number, optionId: number): void {
+    this.selectedOptions.update(curr => {
+      const updated = { ...curr };
+      if (!updated[questionId]) updated[questionId] = new Set();
+
+      const set = updated[questionId];
+      set.has(optionId) ? set.delete(optionId) : set.add(optionId);
+
+      return updated;
     });
   }
 
-  // Helper for Template to check checked state
-  isOptionSelected(questionId: string, optionId: string): boolean {
-    return this.selectedOptions()[questionId]?.has(optionId) ?? false;
-  }
+  // --- Helpers ---
 
-  // --- 7. Navigation Logic ---
+  private selectAllOptions(questionId: number): void {
+    const question = this.rawQuestions().find(q => q.qs_id === questionId);
+    if (!question) return;
 
-  onNext() {
-    const step = this.currentStep();
-
-    // Step 1 Validation
-    if (step === 1) {
-      if (this.form.invalid) {
-        this.form.markAllAsTouched();
-        return;
+    this.selectedOptions.update(curr => {
+      // Only select all if currently empty
+      if (!curr[questionId] || curr[questionId].size === 0) {
+        return {
+          ...curr,
+          [questionId]: new Set(question.options.map(o => o.opt_id))
+        };
       }
-      this.currentStep.set(2);
-      return;
-    }
-
-    // Step 2 Validation (Optional: Ensure at least one qualification is picked?)
-    if (step === 2) {
-      // Example: Log selections or validate
-      // const selections = this.selectedOptions();
-      this.currentStep.set(3);
-      return;
-    }
+      return curr;
+    });
   }
 
-  onBack() {
-    if (this.currentStep() > 1) {
-      this.currentStep.update(s => s - 1);
-    }
+  isQuestionAdded(id: number): boolean {
+    return this.addedQuestionIds().has(id);
   }
 
-  onCancel() {
-    this.close.emit();
+  isOptionSelected(qId: number, optId: number): boolean {
+    return this.selectedOptions()[qId]?.has(optId) ?? false;
   }
 
-  onFinish() {
-    if (this.form.invalid) {
+  // --- Navigation & Submission ---
+
+  onNext(): void {
+    if (this.currentStep() === 1 && this.form.invalid) {
       this.form.markAllAsTouched();
-      this.currentStep.set(1); // Return to step 1 to show errors
       return;
     }
+    if (this.currentStep() < 3) {
+      this.currentStep.update(s => s + 1);
+      if (this.currentStep() === 3) this.searchControl.reset();
+    }
+  }
 
-    // Prepare final payload
-    const payload = {
-      ...this.form.getRawValue(),
-      qualifications: this.serializeQualifications()
+  onBack(): void {
+    if (this.currentStep() > 1) this.currentStep.update(s => s - 1);
+  }
+
+  onCancel(): void {
+    this.form.reset();
+    this.selectedOptions.set({});
+    this.addedQuestionIds.set(new Set());
+    this.currentStep.set(1);
+    this.openQuestionId.set(null);
+  }
+
+  onFinish(): void {
+    const submission = {
+      ...this.form.value,
+      qualifications: this.getFinalQualifications(),
+      timestamp: new Date().toISOString()
     };
-
-    this.savePanel.emit(payload);
+    console.log('Submitting:', submission);
+    this.onCancel();
   }
 
-  // Helper to convert Sets to Arrays for API
-  private serializeQualifications() {
-    const selections = this.selectedOptions();
-    const result: any = {};
-    
-    Object.keys(selections).forEach(qId => {
-      const selectedIds = Array.from(selections[qId]);
-      if (selectedIds.length > 0) {
-        result[qId] = selectedIds;
-      }
-    });
-    
-    return result;
+  private getFinalQualifications() {
+    // Only return data for questions currently in the "Added" list
+    return this.selectedSummary().map(item => ({
+      questionId: item.id,
+      questionLabel: item.title,
+      selectedOptionLabels: item.options
+      // Add IDs if backend needs them
+    }));
   }
 
+  filteredQuestions = computed(() => {
+    // FIX: Read from the signal (this.searchTerm()), NOT the control directly
+    const term = this.searchTerm()?.toLowerCase() || '';
+    
+    if (!term) return this.questions();
+
+    return this.questions().filter(q => 
+      q.label.toLowerCase().includes(term) || q.type.toLowerCase().includes(term)
+    );
+  });
 
 
 }

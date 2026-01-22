@@ -4,149 +4,174 @@
     <header class="dialog-header">
       <h2 class="dialog-title">Add Panel Provider</h2>
       <p class="dialog-description">
-        Configure panel provider settings, qualifications, and quotas for your campaign.
+        Configure panel provider settings, qualifications, and quotas.
       </p>
     </header>
 
     <div class="dialog-steps">
       @for (s of [1, 2, 3]; track s; let last = $last) {
-        <div class="step-group">
-          <div class="step-icon" 
-               [class.step-icon--active]="currentStep() >= s"
-               [class.step-icon--current]="currentStep() === s">
-            {{ s }}
-          </div>
-          <div class="step-label">
-            @switch (s) {
-              @case (1) { Choose Panel }
-              @case (2) { Qualifications }
-              @case (3) { Quotas }
-            }
-          </div>
-          @if (!last) { <div class="step-line" [class.step-line--active]="currentStep() > s"></div> }
+      <div class="step-group">
+        <div class="step-icon" [class.step-icon--active]="currentStep() >= s"
+          [class.step-icon--current]="currentStep() === s">
+          {{ s }}
         </div>
+        <div class="step-label">
+          @switch (s) {
+          @case (1) { Choose Panel }
+          @case (2) { Qualifications }
+          @case (3) { Quotas }
+          }
+        </div>
+        @if (!last) { <div class="step-line" [class.step-line--active]="currentStep() > s"></div> }
+      </div>
       }
     </div>
 
     <div class="dialog-body">
       @switch (currentStep()) {
 
-        @case (1) {
-          <section class="step-content" [formGroup]="form">
-            <div class="form-grid">
-              
-              <div class="form-field full-width">
-                <label for="panel-provider" class="form-label">Choose Panel</label>
-                <select id="panel-provider" class="form-input" formControlName="panelProvider">
-                  <option value="" disabled selected>Select a provider</option>
-                  @for (d of panelProviders(); track d.id) {
-                    <option [value]="d.id">{{ d.name }}</option>
-                  }
-                </select>
-              </div>
+      @case (1) {
+      <section class="step-content" [formGroup]="form">
+        <div class="form-grid">
 
-              <div class="form-field">
-                <label class="form-label" for="max-complete">
-                  Max Complete <span class="text-red-500">*</span>
-                </label>
-                <input id="max-complete" type="number" class="form-input" 
-                       placeholder="e.g. 500" formControlName="maxComplete" />
-              </div>
+          <div class="form-field full-width">
+            <label for="panel-provider" class="form-label">Choose Panel</label>
+            <select id="panel-provider" class="form-input" formControlName="panelProvider">
+              <!-- <option value="" disabled selected>Select a provider</option> -->
+              @for (d of panelProviders(); track d.id) {
+              <option [value]="d.id">{{ d.name }}</option>
+              }
+            </select>
+          </div>
 
-              <div class="form-field">
-                <label class="form-label" for="cpi">
-                  CPI ($) <span class="text-red-500">*</span>
-                </label>
-                <div class="input-prefix-wrapper">
-                  <span class="prefix">$</span>
-                  <input id="cpi" type="number" step="0.01" class="form-input with-prefix" 
-                         placeholder="0.00" formControlName="cpi" />
+          <div class="form-field">
+            <label class="form-label">Max Complete <span class="required">*</span></label>
+            <input type="number" class="form-input" placeholder="e.g. 500" formControlName="maxComplete" />
+          </div>
+
+          <div class="form-field">
+            <label class="form-label">CPI ($) <span class="required">*</span></label>
+            <div class="input-prefix-wrapper">
+              <span class="prefix">$</span>
+              <input type="number" step="0.01" class="form-input with-prefix" placeholder="0.00"
+                formControlName="cpi" />
+            </div>
+          </div>
+
+          <div class="form-field full-width">
+            <label class="form-label">Entry URL <span class="required">*</span></label>
+            <input type="text" class="form-input" placeholder="https://..." formControlName="entryUrl" />
+          </div>
+
+        </div>
+      </section>
+      }
+
+      @case (2) {
+      <section class="step-content flex-column">
+
+        <div class="search-container">
+          <i data-lucide="search" class="search-icon"></i>
+          <input type="text" class="search-input" placeholder="Search qualifications..."
+            [formControl]="searchControl" />
+        </div>
+
+        <div class="questions-scroll-area">
+          <div class="questions-list">
+            @for (q of filteredQuestions(); track q.id) {
+            <div class="question-card" [class.question-card--active]="openQuestionId() === q.id">
+
+              <div class="question-main-row">
+                <div class="question-info">
+                  <span class="question-title">{{ q.label }}</span>
+                  <span class="question-badge">{{ q.type }}</span>
+                </div>
+
+                <div class="row-actions">
+                  <button type="button" class="btn btn-sm btn-outline" (click)="toggleAccordion(q.id)">
+                    {{ openQuestionId() === q.id ? 'Close' : 'Select Options' }}
+                  </button>
+
+                  <button type="button" (click)="toggleAddQuestion(q.id, $event)"
+                    [title]="isQuestionAdded(q.id) ? 'Remove' : 'Add'" class="btn-toggle-add"
+                    [class.is-added]="isQuestionAdded(q.id)">
+
+                    @if (isQuestionAdded(q.id)) {
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                      class="lucide lucide-check w-4 h-4">
+                      <path d="M20 6 9 17l-5-5" />
+                    </svg>
+                    } @else {
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                      class="lucide lucide-plus w-4 h-4">
+                      <path d="M5 12h14"></path>
+                      <path d="M12 5v14"></path>
+                    </svg>
+                    }
+                  </button>
                 </div>
               </div>
 
-              <div class="form-field full-width">
-                <label class="form-label" for="entry-url">
-                  Entry URL <span class="text-red-500">*</span>
-                </label>
-                <input id="entry-url" type="text" class="form-input" 
-                       placeholder="https://panel.example.com/entry?survey_id=..." 
-                       formControlName="entryUrl" />
-              </div>
-
-            </div>
-          </section>
-        }
-
-        @case (2) {
-          <section class="step-content">
-            
-            <div class="search-container">
-              <i data-lucide="search" class="search-icon"></i>
-              <input 
-                type="text" 
-                class="search-input" 
-                placeholder="Search qualifications (e.g. Age, Gender)..."
-                [formControl]="searchControl"
-              />
-            </div>
-
-            <div class="questions-scroll-area">
-              <div class="questions-header-row">
-                <span>Available Questions</span>
-                <span class="badge-count">{{ filteredQuestions().length }} found</span>
-              </div>
-
-              <div class="questions-list">
-                @for (q of filteredQuestions(); track q.id) {
-                  <div class="question-card" [class.question-card--active]="openQuestionId() === q.id">
-                    
-                    <div class="question-main-row">
-                      <div class="question-info">
-                        <span class="question-title">{{ q.label }}</span>
-                        <span class="question-badge">{{ q.type }}</span>
-                      </div>
-                      <button type="button" class="btn btn-sm btn-outline" 
-                              (click)="toggleQuestion(q.id)">
-                        {{ openQuestionId() === q.id ? 'Close' : 'Select Options' }}
-                      </button>
+              @if (openQuestionId() === q.id) {
+              <div class="options-panel">
+                <div class="options-grid">
+                  @for (opt of questionOptions()[q.id]; track opt.id) {
+                  <label class="checkbox-card" [class.checked]="isOptionSelected(q.id, opt.id)">
+                    <input type="checkbox" class="hidden-checkbox" [checked]="isOptionSelected(q.id, opt.id)"
+                      (change)="toggleOption(q.id, opt.id)" />
+                    <div class="custom-checkbox">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20 6 9 17l-5-5" />
+                      </svg>
                     </div>
-
-                    @if (openQuestionId() === q.id) {
-                      <div class="options-panel">
-                        <div class="options-grid">
-                          @for (opt of questionOptions()[q.id]; track opt.id) {
-                            <label class="checkbox-card" [class.checked]="isOptionSelected(q.id, opt.id)">
-                              <input type="checkbox" class="hidden-checkbox"
-                                     [checked]="isOptionSelected(q.id, opt.id)"
-                                     (change)="toggleOption(q.id, opt.id)" />
-                              <div class="custom-checkbox">
-                                <i data-lucide="check" class="icon-check"></i>
-                              </div>
-                              <span class="option-text">{{ opt.label }}</span>
-                            </label>
-                          }
-                        </div>
-                      </div>
-                    }
-                  </div>
-                } @empty {
-                  <div class="empty-state">
-                    <p>No qualifications found matching "{{ searchControl.value }}".</p>
-                  </div>
-                }
+                    <span class="option-text">{{ opt.label }}</span>
+                  </label>
+                  }
+                </div>
               </div>
+              }
             </div>
-          </section>
-        }
+            }
+          </div>
+        </div>
 
-        @case (3) {
-          <section class="step-content centered-content">
-            <div class="placeholder-box">
-              <h3>Quota Configuration</h3>
-              <p>Review your target demographics and set specific limits.</p>
-              </div>
-          </section>
+        @if (selectedSummary().length > 0) {
+        <div class="selection-summary-bar">
+          <div class="summary-header">
+            <span class="summary-label">Selected Qualifications</span>
+            <span class="summary-count">{{ selectedSummary().length }}</span>
+          </div>
+          <div class="summary-tags">
+            @for (item of selectedSummary(); track item.id) {
+            <div class="summary-tag">
+              <span class="tag-title">{{ item.title }}:</span>
+              <span class="tag-values">{{ item.options.join(', ') }}</span>
+              <button type="button" class="tag-remove" (click)="toggleAddQuestion(item.id)">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M18 6 6 18" />
+                  <path d="m6 6 12 12" />
+                </svg>
+              </button>
+            </div>
+            }
+          </div>
+        </div>
         }
+      </section>
+      }
+
+      @case (3) {
+      <section class="step-content centered-content">
+        <div class="placeholder-box">
+          <h3>Quota Configuration</h3>
+          <p>Review your target demographics and set specific limits.</p>
+        </div>
+      </section>
+      }
       }
     </div>
 
@@ -157,18 +182,16 @@
 
       <div class="action-right">
         <button type="button" class="btn btn-ghost" (click)="onCancel()">Cancel</button>
-        
-        @if (currentStep() < 3) {
-          <button type="button" class="btn btn-primary" 
-                  [disabled]="currentStep() === 1 && form.invalid"
-                  (click)="onNext()">
-            Next Step
+
+        @if (currentStep() < 3) { <button type="button" class="btn btn-primary"
+          [disabled]="currentStep() === 1 && form.invalid" (click)="onNext()">
+          Next Step
           </button>
-        } @else {
+          } @else {
           <button type="button" class="btn btn-primary" (click)="onFinish()">
             Complete Setup
           </button>
-        }
+          }
       </div>
     </footer>
 
