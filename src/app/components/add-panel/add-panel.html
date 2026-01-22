@@ -1,5 +1,6 @@
 <div class="dialog-backdrop">
   <div class="dialog-content" role="dialog" aria-modal="true">
+    <button type="button" class="btn btn-ghost " (click)="onCancel()">x</button>
 
     <header class="dialog-header">
       <h2 class="dialog-title">Add Panel Provider</h2>
@@ -176,12 +177,18 @@
     </div>
 
     <footer class="dialog-actions">
-      <button type="button" class="btn btn-ghost" (click)="onBack()" [disabled]="currentStep() === 1">
+      @if (currentStep() > 1){<button type="button" class=" btn-back" (click)="onBack()" [disabled]="currentStep() === 1">
         Back
-      </button>
+      </button>}
 
       <div class="action-right">
-        <button type="button" class="btn btn-ghost" (click)="onCancel()">Cancel</button>
+        <!-- <button type="button" class="btn btn-ghost" (click)="onCancel()">Cancel</button> -->
+
+        @if (currentStep() == 2) { <button type="button" class="btn btn-primary"
+          [disabled]="currentStep() === 1 && form.invalid" (click)="onFinish()">
+          Skip & Finish
+          </button>
+          }
 
         @if (currentStep() < 3) { <button type="button" class="btn btn-primary"
           [disabled]="currentStep() === 1 && form.invalid" (click)="onNext()">
@@ -189,7 +196,7 @@
           </button>
           } @else {
           <button type="button" class="btn btn-primary" (click)="onFinish()">
-            Complete Setup
+            Finish
           </button>
           }
       </div>

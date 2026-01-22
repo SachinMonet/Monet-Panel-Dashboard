@@ -263,22 +263,6 @@
                                         || 0) + (form.get('panel3Target')?.value || 0) }} completes</span>
                                 </div>
                             </div>
-
-                            <!-- <div class="review-card">
-                                <form [formGroup]="form">
-                                    <div class="form-checkbox">
-                                        <input class="form-checkbox__input" type="checkbox" id="confirmDetails"
-                                            formControlName="confirmDetails" />
-                                        <label class="form-checkbox__label" for="confirmDetails">
-                                            I confirm all campaign details are correct <span
-                                                class="form-label__required">*</span>
-                                        </label>
-                                    </div>
-                                    @if (form.get('confirmDetails')?.touched && form.get('confirmDetails')?.invalid) {
-                                    <span class="form-error">Confirmation is required</span>
-                                    }
-                                </form>
-                            </div> -->
                         </div>
 
                         <div class="review-actions">
@@ -389,12 +373,6 @@
                             }
                             }
 
-                            <!-- @if (form.get(control.name!)?.touched &&
-                            form.get(control.name!)?.invalid) {
-                            <span class="form-error">
-                                {{ control.label }} is required
-                            </span>
-                            } -->
                             @if (form.get(control.name!)?.touched && form.get(control.name!)?.invalid) {
                             @let ctrl = form.get(control.name!)!;
                             @if (ctrl.hasError('required')) {

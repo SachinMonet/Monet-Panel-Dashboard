@@ -210,7 +210,7 @@
 .btn {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
+  justify-content: end;
   padding: 0.5rem 1rem;
   font-size: 0.875rem;
   font-weight: 500;
@@ -328,10 +328,10 @@
 
   // Active State (Green)
   &.is-added {
-    background-color: #22c55e;
-    border-color: #16a34a;
+    background-color:black;
+    border-color: white;
     color: white;
-    &:hover { background-color: #16a34a; }
+    &:hover { background-color: black; }
   }
 }
 
@@ -365,7 +365,7 @@
   &.checked {
     background: #eff6ff;
     border-color: var(--border-focus);
-    .custom-checkbox { background: var(--border-focus); border-color: var(--border-focus); color: white; }
+    .custom-checkbox { background: black; }
     .icon-check, svg { opacity: 1; }
   }
   
@@ -445,4 +445,35 @@
   align-items: center;
 
   .action-right { display: flex; gap: 0.75rem; }
+}
+
+
+.btn-back{
+  border: 1px solid gray;
+  border-radius: var(--border-radius);
+  background: var(--surface);
+  transition: var(--transition);
+  overflow: hidden;
+  margin-bottom: 0.75rem;
+  padding: 0.6rem 0.75rem;
+  cursor: pointer;
+  color: var(--text-main);
+}
+
+.dialog-actions {
+  display: flex;
+  align-items: center;
+  /* You can remove 'justify-content: space-between' as margin-left handles it better now */
+  padding: 1rem 1.5rem;
+  border-top: 1px solid var(--border);
+  background: var(--surface-muted);
+}
+
+.action-right {
+  /* THIS IS THE FIX: */
+  margin-left: auto; 
+  
+  /* Standard styling for the right group */
+  display: flex;
+  gap: 0.75rem;
 }

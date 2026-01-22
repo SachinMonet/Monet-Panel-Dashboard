@@ -41,14 +41,16 @@ export class AddPanel {
     this.searchControl.valueChanges, 
     { initialValue: '' }
   );
+  @Output() close = new EventEmitter<void>();
 
   // Form Configuration
   form: FormGroup = this.fb.group({
     panelProvider: ['', Validators.required],
     maxComplete: ['', [Validators.required, Validators.min(1)]],
     cpi: ['', [Validators.required, Validators.min(0.01)]],
-    entryUrl: ['', [Validators.required, Validators.pattern('https?://.+')]]
+    entryUrl: ['', [Validators.required, ]]
   });
+  //Validators.pattern('https?://.+')
 
  
 
@@ -263,6 +265,7 @@ export class AddPanel {
     this.addedQuestionIds.set(new Set());
     this.currentStep.set(1);
     this.openQuestionId.set(null);
+    this.close.emit();
   }
 
   onFinish(): void {
