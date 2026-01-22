@@ -1,9 +1,8 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, EventEmitter, inject, Output, signal } from '@angular/core';
-import { FormBuilder, FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormArray, FormBuilder, FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ApiService } from '../../core/services/api';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { HttpClient } from '@angular/common/http';
 export interface ApiOption {
   opt_id: number;
   option_value: string;
@@ -36,9 +35,9 @@ export interface UIOption {
 export class AddPanel {
   private fb = inject(FormBuilder);
   private apiService = inject(ApiService);
-   searchControl = new FormControl('');
+  searchControl = new FormControl('');
   private searchTerm = toSignal(
-    this.searchControl.valueChanges, 
+    this.searchControl.valueChanges,
     { initialValue: '' }
   );
   @Output() close = new EventEmitter<void>();
@@ -48,11 +47,10 @@ export class AddPanel {
     panelProvider: ['', Validators.required],
     maxComplete: ['', [Validators.required, Validators.min(1)]],
     cpi: ['', [Validators.required, Validators.min(0.01)]],
-    entryUrl: ['', [Validators.required, ]]
+    entryUrl: ['', [Validators.required]],
+    // ADD: Quotas FormArray
+    quotas: this.fb.array([])
   });
-  //Validators.pattern('https?://.+')
-
- 
 
   // --- State Signals ---
   currentStep = signal<number>(1);
@@ -61,14 +59,13 @@ export class AddPanel {
   // Data State
   private rawQuestions = signal<ApiQuestion[]>([]);
   panelProviders = signal<any[]>([]);
+  isLoading = signal<boolean>(false);
 
   // Selection State
-  addedQuestionIds = signal<Set<number>>(new Set()); // The "Campaign" List
-  selectedOptions = signal<{ [questionId: number]: Set<number> }>({}); // The Checkbox State
+  addedQuestionIds = signal<Set<number>>(new Set());
+  selectedOptions = signal<{ [questionId: number]: Set<number> }>({});
 
   // --- Computed Signals ---
-
-  // 1. Transform Raw Data for UI
   questions = computed<UIQuestion[]>(() =>
     this.rawQuestions().map(q => ({
       id: q.qs_id,
@@ -77,7 +74,6 @@ export class AddPanel {
     }))
   );
 
-  // 2. Map Options for easy access
   questionOptions = computed<{ [key: number]: UIOption[] }>(() => {
     const map: { [key: number]: UIOption[] } = {};
     this.rawQuestions().forEach(q => {
@@ -89,19 +85,14 @@ export class AddPanel {
     return map;
   });
 
-  // 3. Filter for Search
   filteredQuestions = computed(() => {
-    // FIX: Read from the signal (this.searchTerm()), NOT the control directly
     const term = this.searchTerm()?.toLowerCase() || '';
-    
     if (!term) return this.questions();
-
-    return this.questions().filter(q => 
+    return this.questions().filter(q =>
       q.label.toLowerCase().includes(term) || q.type.toLowerCase().includes(term)
     );
   });
 
-  // 4. Summary Footer Data
   selectedSummary = computed(() => {
     const allQuestions = this.rawQuestions();
     const selections = this.selectedOptions();
@@ -131,79 +122,164 @@ export class AddPanel {
     this.loadInitialData();
   }
 
-  // --- Data Loading ---
-  private loadInitialData(): void {
-    // Mock Data (Replace with real API call)
-    const mockData: ApiQuestion[] = [
-      { qs_id: 1, question: "Age", type: "range", options: [{ opt_id: 1, option_value: "18-24" }, { opt_id: 2, option_value: "25-34" }, { opt_id: 3, option_value: "35-44" }, { opt_id: 4, option_value: "45-54" }, { opt_id: 5, option_value: "55+" }] },
-      { qs_id: 2, question: "Gender", type: "single", options: [{ opt_id: 6, option_value: "Male" }, { opt_id: 7, option_value: "Female" }, { opt_id: 8, option_value: "Non-binary" }] },
-      { qs_id: 3, question: "Employment", type: "single", options: [{ opt_id: 10, option_value: "Full-time" }, { opt_id: 11, option_value: "Part-time" }, { opt_id: 12, option_value: "Unemployed" }] },
-      { qs_id: 4, question: "Education", type: "single", options: [{ opt_id: 13, option_value: "High school" }, { opt_id: 14, option_value: "College" }, { opt_id: 15, option_value: "Graduate" }] },
-      { qs_id: 5, question: "Location", type: "single", options: [{ opt_id: 16, option_value: "Metro" }, { opt_id: 17, option_value: "Non-metro" }] }
-    ];
-    this.rawQuestions.set(mockData);
+  // --- QUOTA FORMARRAY METHODS ---
 
-    // Load Providers
-    this.apiService.get('panel-providers').subscribe({
-      next: (res: any) => this.panelProviders.set(res.data),
-      error: (err) => console.error('Failed to load providers', err)
+  /**
+   * Get quotas FormArray
+   */
+  get quotas(): FormArray {
+    return this.form.get('quotas') as FormArray;
+  }
+
+  /**
+   * Get conditions FormArray for a specific quota
+   */
+  getConditions(quotaIndex: number): FormArray {
+    return this.quotas.at(quotaIndex).get('conditions') as FormArray;
+  }
+
+  /**
+   * Create a new quota FormGroup
+   */
+  createQuota(): FormGroup {
+    return this.fb.group({
+      name: ['', Validators.required],
+      target: [0, [Validators.required, Validators.min(1)]],
+      conditions: this.fb.array([])
     });
   }
 
-  // --- Core Logic ---
+  /**
+   * Create a new condition FormGroup
+   */
+  createCondition(): FormGroup {
+    return this.fb.group({
+      question: ['', Validators.required],
+      answer: ['', Validators.required]
+    });
+  }
 
   /**
-   * Master Toggle: Adds or Removes a question from the campaign.
-   * - Adding: Auto-selects ALL options if none were selected previously.
-   * - Removing: Completely wipes selection data for that question.
+   * Add new quota
    */
+  addQuota(): void {
+    this.quotas.push(this.createQuota());
+  }
+
+  /**
+   * Remove quota
+   */
+  removeQuota(index: number): void {
+    this.quotas.removeAt(index);
+  }
+
+  /**
+   * Add condition to a specific quota
+   */
+  addCondition(quotaIndex: number): void {
+    const conditions = this.getConditions(quotaIndex);
+    conditions.push(this.createCondition());
+  }
+
+  /**
+   * Remove condition from a specific quota
+   */
+  removeCondition(quotaIndex: number, conditionIndex: number): void {
+    const conditions = this.getConditions(quotaIndex);
+    conditions.removeAt(conditionIndex);
+  }
+
+  /**
+   * Get available questions for dropdown (from selected qualifications)
+   */
+  getAvailableQuestionsForQuota() {
+    return this.selectedSummary().map(item => ({
+      value: item.id.toString(),
+      label: item.title
+    }));
+  }
+
+  /**
+   * Get available options for a selected question in quota condition
+   */
+  getOptionsForQuestion(questionId: string): string[] {
+    const qId = parseInt(questionId);
+    const question = this.rawQuestions().find(q => q.qs_id === qId);
+    if (!question) return [];
+
+    const selectedOpts = this.selectedOptions()[qId];
+    if (!selectedOpts) return [];
+
+    return question.options
+      .filter(opt => selectedOpts.has(opt.opt_id))
+      .map(opt => opt.option_value);
+  }
+
+  // --- END QUOTA METHODS ---
+
+  // --- Data Loading ---
+
+  private loadInitialData(): void {
+    this.isLoading.set(true);
+
+    this.apiService.get('survey/question-options').subscribe({
+      next: (data: any) => {
+        this.rawQuestions.set(data.data);
+        this.isLoading.set(false); // if this is the only call you care about
+      },
+      error: (err) => {
+        console.error('Failed to load questions', err);
+        this.isLoading.set(false);
+      }
+    });
+
+    this.apiService.get('panel-providers').subscribe({
+      next: (res: any) => {
+        this.panelProviders.set(res.data);
+        // optional: if you want loader to wait for both calls,
+        // move isLoading.set(false) here and track both with a counter
+      },
+      error: (err) => {
+        console.error('Failed to load providers', err);
+        this.isLoading.set(false);
+      }
+    });
+  }
+
+
+  // --- Core Logic ---
   toggleAddQuestion(questionId: number, event?: Event): void {
     event?.stopPropagation();
 
     const isAdded = this.addedQuestionIds().has(questionId);
 
     if (isAdded) {
-      // Logic: Remove
       this.addedQuestionIds.update(ids => {
         const newIds = new Set(ids);
         newIds.delete(questionId);
         return newIds;
       });
 
-      // Cleanup selections
       this.selectedOptions.update(opts => {
         const newOpts = { ...opts };
         delete newOpts[questionId];
         return newOpts;
       });
-
     } else {
-      // Logic: Add
       this.addedQuestionIds.update(ids => {
         const newIds = new Set(ids);
         newIds.add(questionId);
         return newIds;
       });
 
-      // Auto-Select All
       this.selectAllOptions(questionId);
     }
   }
 
-  /**
-   * Accordion Toggle
-   */
   toggleAccordion(questionId: number): void {
     this.openQuestionId.update(curr => curr === questionId ? null : questionId);
-
-    // UX: If opening an un-added question, maybe we want to prepopulate? 
-    // Current logic: Only auto-selects if user clicks "+".
-    // If you want opening accordion to auto-select, call this.selectAllOptions(questionId) here.
   }
 
-  /**
-   * Checkbox Toggle
-   */
   toggleOption(questionId: number, optionId: number): void {
     this.selectedOptions.update(curr => {
       const updated = { ...curr };
@@ -216,14 +292,11 @@ export class AddPanel {
     });
   }
 
-  // --- Helpers ---
-
   private selectAllOptions(questionId: number): void {
     const question = this.rawQuestions().find(q => q.qs_id === questionId);
     if (!question) return;
 
     this.selectedOptions.update(curr => {
-      // Only select all if currently empty
       if (!curr[questionId] || curr[questionId].size === 0) {
         return {
           ...curr,
@@ -243,9 +316,8 @@ export class AddPanel {
   }
 
   // --- Navigation & Submission ---
-
   onNext(): void {
-    if (this.currentStep() === 1 && this.form.invalid) {
+    if (this.currentStep() === 1 && this.form.get('panelProvider')?.invalid) {
       this.form.markAllAsTouched();
       return;
     }
@@ -265,13 +337,24 @@ export class AddPanel {
     this.addedQuestionIds.set(new Set());
     this.currentStep.set(1);
     this.openQuestionId.set(null);
+    // Clear quotas
+    while (this.quotas.length > 0) {
+      this.quotas.removeAt(0);
+    }
     this.close.emit();
   }
 
   onFinish(): void {
+    // Validate quotas on step 3
+    if (this.currentStep() === 3 && this.quotas.invalid) {
+      this.markFormGroupTouched(this.quotas);
+      return;
+    }
+
     const submission = {
       ...this.form.value,
       qualifications: this.getFinalQualifications(),
+      quotas: this.form.value.quotas, // Include quotas in submission
       timestamp: new Date().toISOString()
     };
     console.log('Submitting:', submission);
@@ -279,16 +362,29 @@ export class AddPanel {
   }
 
   private getFinalQualifications() {
-    // Only return data for questions currently in the "Added" list
     return this.selectedSummary().map(item => ({
       questionId: item.id,
       questionLabel: item.title,
       selectedOptionLabels: item.options
-      // Add IDs if backend needs them
     }));
   }
 
+  /**
+   * Helper method to mark all fields as touched for validation
+   */
+  private markFormGroupTouched(formGroup: FormGroup | FormArray): void {
+    Object.keys(formGroup.controls).forEach(key => {
+      const control = formGroup.get(key);
+      control?.markAsTouched();
 
-
-
+      if (control instanceof FormGroup || control instanceof FormArray) {
+        this.markFormGroupTouched(control);
+      }
+    });
+  }
 }
+
+
+
+
+

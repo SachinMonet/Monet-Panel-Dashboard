@@ -13,7 +13,7 @@
   --border: #e5e7eb;
   --border-focus: #4f46e5;
   --border-radius: 0.375rem; // 6px
-  --radius-lg: 0.75rem;      // 12px
+  --radius-lg: 0.75rem; // 12px
 
   --text-main: #111827;
   --text-muted: #6b7280;
@@ -38,9 +38,39 @@
 }
 
 // Animations
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-@keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-@keyframes slideDown { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 
 // =========================================
 // 3. Inputs & Forms
@@ -63,17 +93,30 @@
     box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
   }
 
-  &::placeholder { color: #9ca3af; }
-  &:disabled { background-color: var(--surface-muted); cursor: not-allowed; opacity: 0.7; }
+  &::placeholder {
+    color: #9ca3af;
+  }
+
+  &:disabled {
+    background-color: var(--surface-muted);
+    cursor: not-allowed;
+    opacity: 0.7;
+  }
 }
 
-.form-input, select.form-input { @extend .input-base; }
+.form-input,
+select.form-input {
+  @extend .input-base;
+}
 
 .form-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 1.25rem;
-  .full-width { grid-column: 1 / -1; }
+
+  .full-width {
+    grid-column: 1 / -1;
+  }
 }
 
 .form-field {
@@ -81,13 +124,22 @@
   flex-direction: column;
   gap: 0.375rem;
   width: 100%;
-  .form-label { font-size: 0.875rem; font-weight: 500; color: var(--text-main); }
-  .required { color: var(--text-danger); }
+
+  .form-label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-main);
+  }
+
+  .required {
+    color: var(--text-danger);
+  }
 }
 
 .input-prefix-wrapper {
   position: relative;
   width: 100%;
+
   .prefix {
     position: absolute;
     left: 0.75rem;
@@ -98,7 +150,11 @@
     pointer-events: none;
     z-index: 2;
   }
-  input { @extend .input-base; padding-left: 1.75rem; }
+
+  input {
+    @extend .input-base;
+    padding-left: 1.75rem;
+  }
 }
 
 // =========================================
@@ -131,8 +187,20 @@
 
 .dialog-header {
   padding: 1.5rem 1.5rem 1rem;
-  .dialog-title { font-size: 1.25rem; font-weight: 600; color: var(--text-main); margin: 0 0 0.5rem; }
-  .dialog-description { font-size: 0.875rem; color: var(--text-muted); line-height: 1.5; margin: 0; }
+
+  .dialog-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-main);
+    margin: 0 0 0.5rem;
+  }
+
+  .dialog-description {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+    margin: 0;
+  }
 }
 
 .dialog-close-icon {
@@ -145,7 +213,11 @@
   cursor: pointer;
   padding: 0.25rem;
   border-radius: 50%;
-  &:hover { background: var(--surface-hover); color: var(--text-main); }
+
+  &:hover {
+    background: var(--surface-hover);
+    color: var(--text-main);
+  }
 }
 
 // Stepper
@@ -161,7 +233,11 @@
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  &:not(:last-child) { flex: 1; margin-right: 0.75rem; }
+
+  &:not(:last-child) {
+    flex: 1;
+    margin-right: 0.75rem;
+  }
 }
 
 .step-icon {
@@ -177,12 +253,35 @@
   transition: var(--transition);
   flex-shrink: 0;
 
-  &--active { background: var(--primary); color: var(--primary-fg); border-color: var(--primary); }
-  &--current { box-shadow: 0 0 0 3px rgba(17, 24, 39, 0.15); }
+  &--active {
+    background: var(--primary);
+    color: var(--primary-fg);
+    border-color: var(--primary);
+  }
+
+  &--current {
+    box-shadow: 0 0 0 3px rgba(17, 24, 39, 0.15);
+  }
 }
 
-.step-label { font-size: 0.75rem; font-weight: 500; color: var(--text-main); white-space: nowrap; }
-.step-line { flex: 1; height: 2px; background: var(--border); border-radius: 99px; transition: var(--transition); &--active { background: var(--primary); } }
+.step-label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-main);
+  white-space: nowrap;
+}
+
+.step-line {
+  flex: 1;
+  height: 2px;
+  background: var(--border);
+  border-radius: 99px;
+  transition: var(--transition);
+
+  &--active {
+    background: var(--primary);
+  }
+}
 
 // Dialog Body Container
 .dialog-body {
@@ -199,9 +298,11 @@
   height: 100%;
   overflow: hidden;
   padding: 1.5rem;
-  
+
   // Reset padding for the specific flex-column variant
-  &.flex-column { padding: 0; }
+  &.flex-column {
+    padding: 0;
+  }
 }
 
 // =========================================
@@ -219,29 +320,48 @@
   transition: var(--transition);
   border: 1px solid transparent;
   white-space: nowrap;
-  &:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
 }
 
 .btn-primary {
   background: var(--primary);
   color: var(--primary-fg);
-  &:hover:not(:disabled) { background: var(--primary-hover); }
+
+  &:hover:not(:disabled) {
+    background: var(--primary-hover);
+  }
 }
 
 .btn-ghost {
   background: transparent;
   color: var(--text-muted);
-  &:hover { background: rgba(0, 0, 0, 0.05); color: var(--text-main); }
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.05);
+    color: var(--text-main);
+  }
 }
 
 .btn-outline {
   border-color: var(--border);
   background: var(--surface);
   color: var(--text-main);
-  &:hover { border-color: var(--text-muted); background: var(--surface-muted); }
+
+  &:hover {
+    border-color: var(--text-muted);
+    background: var(--surface-muted);
+  }
 }
 
-.btn-sm { padding: 0.25rem 0.75rem; font-size: 0.75rem; height: auto; }
+.btn-sm {
+  padding: 0.25rem 0.75rem;
+  font-size: 0.75rem;
+  height: auto;
+}
 
 // =========================================
 // 6. Feature: Qualifications (Search, List, Cards)
@@ -261,7 +381,11 @@
     color: var(--text-muted);
     z-index: 2;
   }
-  .search-input { @extend .input-base; padding-left: 2.5rem; }
+
+  .search-input {
+    @extend .input-base;
+    padding-left: 2.5rem;
+  }
 }
 
 .questions-scroll-area {
@@ -270,7 +394,11 @@
   padding: 0 1rem 1rem 1rem;
 }
 
-.questions-list { display: flex; flex-direction: column; gap: 0.75rem; }
+.questions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
 
 // Question Card
 .question-card {
@@ -297,12 +425,32 @@
   .question-info {
     display: flex;
     flex-direction: column;
-    .question-title { font-weight: 500; color: var(--text-main); font-size: 0.95rem; }
-    .question-badge { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; background: var(--surface-muted); padding: 2px 6px; border-radius: 4px; display: inline-block; width: fit-content; margin-top: 2px; }
+
+    .question-title {
+      font-weight: 500;
+      color: var(--text-main);
+      font-size: 0.95rem;
+    }
+
+    .question-badge {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      background: var(--surface-muted);
+      padding: 2px 6px;
+      border-radius: 4px;
+      display: inline-block;
+      width: fit-content;
+      margin-top: 2px;
+    }
   }
 }
 
-.row-actions { display: flex; align-items: center; gap: 0.5rem; }
+.row-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
 
 // The Toggle/Add Button (Matched to HTML class: .btn-toggle-add)
 .btn-toggle-add {
@@ -318,7 +466,11 @@
   padding: 0;
 
   // Icon
-  svg, i { width: 1.125rem; height: 1.125rem; }
+  svg,
+  i {
+    width: 1.125rem;
+    height: 1.125rem;
+  }
 
   &:hover {
     border-color: #64748b;
@@ -328,10 +480,13 @@
 
   // Active State (Green)
   &.is-added {
-    background-color:black;
+    background-color: black;
     border-color: white;
     color: white;
-    &:hover { background-color: black; }
+
+    &:hover {
+      background-color: black;
+    }
   }
 }
 
@@ -361,16 +516,28 @@
   cursor: pointer;
   transition: var(--transition);
 
-  &:hover { border-color: #9ca3af; }
+  &:hover {
+    border-color: #9ca3af;
+  }
+
   &.checked {
     background: #eff6ff;
     border-color: var(--border-focus);
-    .custom-checkbox { background: black; }
-    .icon-check, svg { opacity: 1; }
+
+    .custom-checkbox {
+      background: black;
+    }
+
+    .icon-check,
+    svg {
+      opacity: 1;
+    }
   }
-  
-  .hidden-checkbox { display: none; }
-  
+
+  .hidden-checkbox {
+    display: none;
+  }
+
   .custom-checkbox {
     width: 1.125rem;
     height: 1.125rem;
@@ -380,11 +547,21 @@
     @include flex-center;
     transition: var(--transition);
     flex-shrink: 0;
-    
-    .icon-check, svg { width: 0.75rem; height: 0.75rem; opacity: 0; transition: opacity 0.1s; }
+
+    .icon-check,
+    svg {
+      width: 0.75rem;
+      height: 0.75rem;
+      opacity: 0;
+      transition: opacity 0.1s;
+    }
   }
-  
-  .option-text { font-size: 0.875rem; color: var(--text-main); user-select: none; }
+
+  .option-text {
+    font-size: 0.875rem;
+    color: var(--text-main);
+    user-select: none;
+  }
 }
 
 // =========================================
@@ -405,11 +582,28 @@
     align-items: center;
     gap: 0.75rem;
     margin-bottom: 0.75rem;
-    .summary-label { font-weight: 600; color: #334155; font-size: 0.9rem; }
-    .summary-count { background: #0f172a; color: white; font-size: 0.75rem; padding: 2px 8px; border-radius: 12px; font-weight: 600; }
+
+    .summary-label {
+      font-weight: 600;
+      color: #334155;
+      font-size: 0.9rem;
+    }
+
+    .summary-count {
+      background: #0f172a;
+      color: white;
+      font-size: 0.75rem;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-weight: 600;
+    }
   }
 
-  .summary-tags { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  .summary-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
 
   .summary-tag {
     display: inline-flex;
@@ -421,14 +615,35 @@
     padding: 4px 8px;
     font-size: 0.8rem;
 
-    .tag-title { font-weight: 700; color: #334155; }
-    .tag-values { color: #64748b; max-width: 250px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .tag-title {
+      font-weight: 700;
+      color: #334155;
+    }
+
+    .tag-values {
+      color: #64748b;
+      max-width: 250px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
     .tag-remove {
       @include flex-center;
-      background: none; border: none; padding: 2px;
-      cursor: pointer; color: #94a3b8;
-      &:hover { color: var(--text-danger); }
-      svg { width: 14px; height: 14px; }
+      background: none;
+      border: none;
+      padding: 2px;
+      cursor: pointer;
+      color: #94a3b8;
+
+      &:hover {
+        color: var(--text-danger);
+      }
+
+      svg {
+        width: 14px;
+        height: 14px;
+      }
     }
   }
 }
@@ -444,11 +659,14 @@
   justify-content: space-between;
   align-items: center;
 
-  .action-right { display: flex; gap: 0.75rem; }
+  .action-right {
+    display: flex;
+    gap: 0.75rem;
+  }
 }
 
 
-.btn-back{
+.btn-back {
   border: 1px solid gray;
   border-radius: var(--border-radius);
   background: var(--surface);
@@ -463,17 +681,69 @@
 .dialog-actions {
   display: flex;
   align-items: center;
-  /* You can remove 'justify-content: space-between' as margin-left handles it better now */
   padding: 1rem 1.5rem;
   border-top: 1px solid var(--border);
   background: var(--surface-muted);
 }
 
 .action-right {
-  /* THIS IS THE FIX: */
-  margin-left: auto; 
-  
-  /* Standard styling for the right group */
+  margin-left: auto;
   display: flex;
   gap: 0.75rem;
+}
+
+.loader-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  z-index: 1000;
+}
+
+.loader-dot {
+  width: 16px;
+  height: 16px;
+  background-color: #000;
+  border-radius: 50%;
+  animation: bounce 1.2s ease-in-out infinite;
+}
+
+.loader-dot:nth-child(1) {
+  animation-delay: 0s;
+}
+
+.loader-dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.loader-dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes bounce {
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+/* Optional: Add loading text */
+.loader-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  justify-content: center;
+  height: 100%;
+}
+
+.loader-text {
+  color: #666;
+  font-size: 14px;
+  font-weight: 500;
 }

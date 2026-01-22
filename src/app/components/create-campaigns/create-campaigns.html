@@ -437,8 +437,4 @@
 
 }
 
-@if(isAddPanelOpen){<app-add-panel
-
-  (close)="closeAddPanel()"
-  (savePanel)="handlePanelSaved($event)"
-></app-add-panel>}
+@if(isAddPanelOpen){<app-add-panel (close)="closeAddPanel()" (savePanel)="handlePanelSaved($event)"></app-add-panel>}

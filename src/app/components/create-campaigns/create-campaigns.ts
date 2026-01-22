@@ -11,7 +11,7 @@ import { AddPanel } from '../add-panel/add-panel';
 
 @Component({
   selector: 'app-create-campaigns',
-  imports: [CommonModule, LucideModule, LucideAngularModule, FormsModule, ReactiveFormsModule, RouterLink,AddPanel],
+  imports: [CommonModule, LucideModule, LucideAngularModule, FormsModule, ReactiveFormsModule, RouterLink, AddPanel],
   templateUrl: './create-campaigns.html',
   styleUrl: './create-campaigns.scss',
 })
@@ -22,318 +22,318 @@ export class CreateCampaigns {
   allocationMode: 'manual' | 'auto' = 'manual';
   form!: FormGroup;
   isLoading = false;
-  
 
 
-steps: StepData[] = [
-  {
-    stepNumber: 1,
-    stepName: 'Basics',
-    title: 'Campaign Basics',
-    controls: [
-      {
-        type: 'input',
-        inputType: 'text',
-        label: 'Campaign Name',
-        placeholder: 'Enter campaign name',
-        required: true,
-        name: 'campaignName',
-        colSpan: 2,
-        validators: [
-          { type: 'minLength', value: 3 },
-          { type: 'maxLength', value: 100 },
-        ],
-      },
-      {
-        type: 'dropdown',
-        label: 'Country',
-        placeholder: 'Select country',
-        required: true,
-        name: 'country',
-        colSpan: 1,
-      },
-      {
-        type: 'dropdown',
-        label: 'Language',
-        placeholder: 'Select language',
-        required: true,
-        name: 'language',
-        colSpan: 1,
-      },
-      {
-        type: 'input',
-        inputType: 'number',
-        label: 'LOI (minutes)',
-        placeholder: '15',
-        required: true,
-        name: 'loi',
-        colSpan: 1,
-        validators: [
-          { type: 'min', value: 1 },
-          // { type: 'max', value: 15 },
-        ],
-      },
-      {
-        type: 'input',
-        inputType: 'number',
-        label: 'IR (%)',
-        placeholder: '40',
-        required: true,
-        name: 'ir',
-        colSpan: 1,
-        validators: [
-          { type: 'min', value: 1 },
-          { type: 'max', value: 100 },
-        ],
-      },
-      {
-        type: 'input',
-        inputType: 'number',
-        label: 'Total Target Completes',
-        placeholder: '1000',
-        required: true,
-        name: 'targetCompletes',
-        colSpan: 2,
-        validators: [
-          { type: 'min', value: 1 },
-        ],
-      },
-    ],
-  },
-  {
-    stepNumber: 2,
-    stepName: 'Panels',
-    title: 'Select Panels',
-    controls: [
-      {
-        type: 'input',
-        inputType: 'text',
-        label: 'Panel 1 Target Completes',
-        placeholder: '500',
-        defaultValue: 500,
-        required: true,
-        name: 'panel1Target',
-        colSpan: 1,
-        validators: [
-          // { type: 'min', value: 0 },
-        ],
-      },
-      {
-        type: 'input',
-        inputType: 'number',
-        label: 'Panel 1 CPI ($)',
-        placeholder: '2.50',
-        defaultValue: 2.50,
-        required: true,
-        name: 'panel1Cpi',
-        colSpan: 1,
-        validators: [
-          { type: 'min', value: 0 },
-        ],
-      },
-      {
-        type: 'input',
-        inputType: 'text',
-        label: 'Panel 2 Target Completes',
-        placeholder: '300',
-        defaultValue: 300,
-        required: true,
-        name: 'panel2Target',
-        colSpan: 1,
-        validators: [
-          // { type: 'min', value: 0 },
-        ],
-      },
-      {
-        type: 'input',
-        inputType: 'number',
-        label: 'Panel 2 CPI ($)',
-        placeholder: '2.80',
-        defaultValue: 2.80,
-        required: true,
-        name: 'panel2Cpi',
-        colSpan: 1,
-        validators: [
-          { type: 'min', value: 0 },
-        ],
-      },
-      {
-        type: 'input',
-        inputType: 'text',
-        label: 'Panel 3 Target Completes',
-        placeholder: '200',
-        defaultValue: 200,
-        required: true,
-        name: 'panel3Target',
-        colSpan: 1,
-        validators: [
-          // { type: 'min', value: 0 },
-        ],
-      },
-      {
-        type: 'input',
-        inputType: 'number',
-        label: 'Panel 3 CPI ($)',
-        placeholder: '3.00',
-        defaultValue: 3.00,
-        required: true,
-        name: 'panel3Cpi',
-        colSpan: 1,
-        validators: [
-          { type: 'min', value: 0 },
-        ],
-      },
-    ],
-  },
-  {
-  stepNumber: 3,
-  stepName: 'Redirects',
-  title: 'Redirect URLs',
-  controls: [
+
+  steps: StepData[] = [
     {
-      type: 'input',
-      inputType: 'text',
-      label: 'Success URL ',
-      placeholder: 'https://panel.example.com/success?pid=[PID]&sid=[SID]',
-      required: false,
-      name: 'redirectComplete',
-      colSpan: 2,
-      defaultValue: 'https://panel.example.com/success?pid=[PID]&sid=[SID]',
-      validators: [
-        { type: 'pattern', value: '^https?://.*$' },
+      stepNumber: 1,
+      stepName: 'Basics',
+      title: 'Campaign Basics',
+      controls: [
+        {
+          type: 'input',
+          inputType: 'text',
+          label: 'Campaign Name',
+          placeholder: 'Enter campaign name',
+          required: true,
+          name: 'campaignName',
+          colSpan: 2,
+          validators: [
+            { type: 'minLength', value: 3 },
+            { type: 'maxLength', value: 100 },
+          ],
+        },
+        {
+          type: 'dropdown',
+          label: 'Country',
+          placeholder: 'Select country',
+          required: true,
+          name: 'country',
+          colSpan: 1,
+        },
+        {
+          type: 'dropdown',
+          label: 'Language',
+          placeholder: 'Select language',
+          required: true,
+          name: 'language',
+          colSpan: 1,
+        },
+        {
+          type: 'input',
+          inputType: 'number',
+          label: 'LOI (minutes)',
+          placeholder: '15',
+          required: true,
+          name: 'loi',
+          colSpan: 1,
+          validators: [
+            { type: 'min', value: 1 },
+            // { type: 'max', value: 15 },
+          ],
+        },
+        {
+          type: 'input',
+          inputType: 'number',
+          label: 'IR (%)',
+          placeholder: '40',
+          required: true,
+          name: 'ir',
+          colSpan: 1,
+          validators: [
+            { type: 'min', value: 1 },
+            { type: 'max', value: 100 },
+          ],
+        },
+        {
+          type: 'input',
+          inputType: 'number',
+          label: 'Total Target Completes',
+          placeholder: '1000',
+          required: true,
+          name: 'targetCompletes',
+          colSpan: 2,
+          validators: [
+            { type: 'min', value: 1 },
+          ],
+        },
       ],
     },
     {
-      type: 'input',
-      inputType: 'text',
-      label: 'Termination URL ',
-      placeholder: 'https://panel.example.com/terminate?pid=[PID]&sid=[SID]',
-      required: false,
-      name: 'redirectTerminate',
-      colSpan: 2,
-      defaultValue: 'https://panel.example.com/terminate?pid=[PID]&sid=[SID]',
-      validators: [
-        { type: 'pattern', value: '^https?://.*$' },
+      stepNumber: 2,
+      stepName: 'Panels',
+      title: 'Select Panels',
+      controls: [
+        {
+          type: 'input',
+          inputType: 'text',
+          label: 'Panel 1 Target Completes',
+          placeholder: '500',
+          defaultValue: 500,
+          required: true,
+          name: 'panel1Target',
+          colSpan: 1,
+          validators: [
+            // { type: 'min', value: 0 },
+          ],
+        },
+        {
+          type: 'input',
+          inputType: 'number',
+          label: 'Panel 1 CPI ($)',
+          placeholder: '2.50',
+          defaultValue: 2.50,
+          required: true,
+          name: 'panel1Cpi',
+          colSpan: 1,
+          validators: [
+            { type: 'min', value: 0 },
+          ],
+        },
+        {
+          type: 'input',
+          inputType: 'text',
+          label: 'Panel 2 Target Completes',
+          placeholder: '300',
+          defaultValue: 300,
+          required: true,
+          name: 'panel2Target',
+          colSpan: 1,
+          validators: [
+            // { type: 'min', value: 0 },
+          ],
+        },
+        {
+          type: 'input',
+          inputType: 'number',
+          label: 'Panel 2 CPI ($)',
+          placeholder: '2.80',
+          defaultValue: 2.80,
+          required: true,
+          name: 'panel2Cpi',
+          colSpan: 1,
+          validators: [
+            { type: 'min', value: 0 },
+          ],
+        },
+        {
+          type: 'input',
+          inputType: 'text',
+          label: 'Panel 3 Target Completes',
+          placeholder: '200',
+          defaultValue: 200,
+          required: true,
+          name: 'panel3Target',
+          colSpan: 1,
+          validators: [
+            // { type: 'min', value: 0 },
+          ],
+        },
+        {
+          type: 'input',
+          inputType: 'number',
+          label: 'Panel 3 CPI ($)',
+          placeholder: '3.00',
+          defaultValue: 3.00,
+          required: true,
+          name: 'panel3Cpi',
+          colSpan: 1,
+          validators: [
+            { type: 'min', value: 0 },
+          ],
+        },
       ],
     },
     {
-      type: 'input',
-      inputType: 'text',
-      label: 'Overquota URL ',
-      placeholder: 'https://panel.example.com/overquota?pid=[PID]&sid=[SID]',
-      required: false,
-      name: 'redirectOverquota',
-      colSpan: 2,
-      defaultValue: 'https://panel.example.com/overquota?pid=[PID]&sid=[SID]',
-      validators: [
-        { type: 'pattern', value: '^https?://.*$' },
+      stepNumber: 3,
+      stepName: 'Redirects',
+      title: 'Redirect URLs',
+      controls: [
+        {
+          type: 'input',
+          inputType: 'text',
+          label: 'Success URL ',
+          placeholder: 'https://panel.example.com/success?pid=[PID]&sid=[SID]',
+          required: false,
+          name: 'redirectComplete',
+          colSpan: 2,
+          defaultValue: 'https://panel.example.com/success?pid=[PID]&sid=[SID]',
+          validators: [
+            { type: 'pattern', value: '^https?://.*$' },
+          ],
+        },
+        {
+          type: 'input',
+          inputType: 'text',
+          label: 'Termination URL ',
+          placeholder: 'https://panel.example.com/terminate?pid=[PID]&sid=[SID]',
+          required: false,
+          name: 'redirectTerminate',
+          colSpan: 2,
+          defaultValue: 'https://panel.example.com/terminate?pid=[PID]&sid=[SID]',
+          validators: [
+            { type: 'pattern', value: '^https?://.*$' },
+          ],
+        },
+        {
+          type: 'input',
+          inputType: 'text',
+          label: 'Overquota URL ',
+          placeholder: 'https://panel.example.com/overquota?pid=[PID]&sid=[SID]',
+          required: false,
+          name: 'redirectOverquota',
+          colSpan: 2,
+          defaultValue: 'https://panel.example.com/overquota?pid=[PID]&sid=[SID]',
+          validators: [
+            { type: 'pattern', value: '^https?://.*$' },
+          ],
+        },
       ],
     },
-  ],
-},
 
-  {
-    stepNumber: 4,
-    stepName: 'Review',
-    title: 'Review & Launch',
-    controls: [],
-  },
-];
+    {
+      stepNumber: 4,
+      stepName: 'Review',
+      title: 'Review & Launch',
+      controls: [],
+    },
+  ];
 
 
 
   languages: any[] = [];
-countries: any[] = [];
+  countries: any[] = [];
   campaignId: any;
 
-  constructor(private fb: FormBuilder, private _api: ApiService,private cdr: ChangeDetectorRef) { }
+  constructor(private fb: FormBuilder, private _api: ApiService, private cdr: ChangeDetectorRef) { }
 
 
-private languagesLoaded = false;
-private countriesLoaded = false;
+  private languagesLoaded = false;
+  private countriesLoaded = false;
 
-ngOnInit() {
-  this.buildForm();
-  this.isLoading = true;
+  ngOnInit() {
+    this.buildForm();
+    this.isLoading = true;
 
-  this._api.get('languages').subscribe({
-    next: (res: any) => {
-      this.languages = res.data;
-      this.languagesLoaded = true;
-      this.checkAllLoaded();
-    },
-    error: () => {
-     // this.languagesLoaded = true;
-      this.checkAllLoaded();
-    },
-  });
+    this._api.get('languages').subscribe({
+      next: (res: any) => {
+        this.languages = res.data;
+        this.languagesLoaded = true;
+        this.checkAllLoaded();
+      },
+      error: () => {
+        // this.languagesLoaded = true;
+        this.checkAllLoaded();
+      },
+    });
 
-  this._api.get('countries').subscribe({
-    next: (res: any) => {
-      this.countries = res.data;
-      this.countriesLoaded = true;
-      this.checkAllLoaded();
-    },
-    error: () => {
-      //this.countriesLoaded = true;
-      this.checkAllLoaded();
-    },
-  });
-}
+    this._api.get('countries').subscribe({
+      next: (res: any) => {
+        this.countries = res.data;
+        this.countriesLoaded = true;
+        this.checkAllLoaded();
+      },
+      error: () => {
+        //this.countriesLoaded = true;
+        this.checkAllLoaded();
+      },
+    });
+  }
 
-private checkAllLoaded() {
-  this.isLoading = !(this.languagesLoaded && this.countriesLoaded);
-  this.cdr.markForCheck(); // or this.cdr.detectChanges();
-}
+  private checkAllLoaded() {
+    this.isLoading = !(this.languagesLoaded && this.countriesLoaded);
+    this.cdr.markForCheck(); // or this.cdr.detectChanges();
+  }
 
 
   getControl(name: string | undefined) {
     return this.form.get(name!) as any;
   }
 
-buildForm() {
-  const formGroup: { [key: string]: any } = {};
+  buildForm() {
+    const formGroup: { [key: string]: any } = {};
 
-  this.steps.forEach(step => {
-    step.controls.forEach(control => {
-      if (!control.name) return;
+    this.steps.forEach(step => {
+      step.controls.forEach(control => {
+        if (!control.name) return;
 
-      const validators = [];
+        const validators = [];
 
-      if (control.required) {
-        validators.push(Validators.required);
-      }
+        if (control.required) {
+          validators.push(Validators.required);
+        }
 
-      if (control.validators) {
-        control.validators.forEach(v => {
-          switch (v.type) {
-            case 'min':
-              validators.push(Validators.min(v.value as number));
-              break;
-            case 'max':
-              validators.push(Validators.max(v.value as number));
-              break;
-            case 'minLength':
-              validators.push(Validators.minLength(v.value as number));
-              break;
-            case 'maxLength':
-              validators.push(Validators.maxLength(v.value as number));
-              break;
-            case 'pattern':
-              validators.push(Validators.pattern(v.value as string));
-              break;
-          }
-        });
-      }
+        if (control.validators) {
+          control.validators.forEach(v => {
+            switch (v.type) {
+              case 'min':
+                validators.push(Validators.min(v.value as number));
+                break;
+              case 'max':
+                validators.push(Validators.max(v.value as number));
+                break;
+              case 'minLength':
+                validators.push(Validators.minLength(v.value as number));
+                break;
+              case 'maxLength':
+                validators.push(Validators.maxLength(v.value as number));
+                break;
+              case 'pattern':
+                validators.push(Validators.pattern(v.value as string));
+                break;
+            }
+          });
+        }
 
-      const initialValue = control.defaultValue ?? '';
+        const initialValue = control.defaultValue ?? '';
 
-      formGroup[control.name] = [initialValue, validators];
+        formGroup[control.name] = [initialValue, validators];
+      });
     });
-  });
 
-  this.form = this.fb.group(formGroup);
-}
+    this.form = this.fb.group(formGroup);
+  }
 
 
 
@@ -357,7 +357,7 @@ buildForm() {
   }
 
   nextStep(number: number) {
-      if (this.currentStep < this.totalSteps && this.isCurrentStepValid()) {
+    if (this.currentStep < this.totalSteps && this.isCurrentStepValid()) {
       this.currentStep++;
     }
     // if(number === 1){
@@ -432,8 +432,8 @@ buildForm() {
     return this.allocatedTotal - this.targetTotal;
   }
 
- 
-   isAddPanelOpen = false;
+
+  isAddPanelOpen = false;
 
   addPanel() {
     this.isAddPanelOpen = true;
