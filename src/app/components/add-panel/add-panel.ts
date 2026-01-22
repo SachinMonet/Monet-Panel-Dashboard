@@ -88,14 +88,16 @@ export class AddPanel {
   });
 
   // 3. Filter for Search
-  // filteredQuestions = computed(() => {
-  //   const term = this.searchControl.value?.toLowerCase() || '';
-  //   if (!term) return this.questions();
+  filteredQuestions = computed(() => {
+    // FIX: Read from the signal (this.searchTerm()), NOT the control directly
+    const term = this.searchTerm()?.toLowerCase() || '';
+    
+    if (!term) return this.questions();
 
-  //   return this.questions().filter(q =>
-  //     q.label.toLowerCase().includes(term) || q.type.toLowerCase().includes(term)
-  //   );
-  // });
+    return this.questions().filter(q => 
+      q.label.toLowerCase().includes(term) || q.type.toLowerCase().includes(term)
+    );
+  });
 
   // 4. Summary Footer Data
   selectedSummary = computed(() => {
@@ -283,16 +285,7 @@ export class AddPanel {
     }));
   }
 
-  filteredQuestions = computed(() => {
-    // FIX: Read from the signal (this.searchTerm()), NOT the control directly
-    const term = this.searchTerm()?.toLowerCase() || '';
-    
-    if (!term) return this.questions();
 
-    return this.questions().filter(q => 
-      q.label.toLowerCase().includes(term) || q.type.toLowerCase().includes(term)
-    );
-  });
 
 
 }
