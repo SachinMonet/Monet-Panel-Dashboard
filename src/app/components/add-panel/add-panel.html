@@ -158,7 +158,10 @@
             @for (item of selectedSummary(); track item.id) {
             <div class="summary-tag">
               <span class="tag-title">{{ item.title }}:</span>
-              <span class="tag-values">{{ item.options.join(', ') }}</span>
+              <span class="tag-values">
+                {{ getOptionLabels(item) }}
+              </span>
+
               <button type="button" class="tag-remove" (click)="toggleAddQuestion(item.id)">
                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
                   stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -260,30 +263,47 @@
                   <div [formGroupName]="j" class="flex gap-2 items-start">
 
                     <div class="flex-1 grid grid-cols-2 gap-2">
-                      <!-- Question Select -->
-                      <select formControlName="question"
-                        class="flex w-full items-center justify-between gap-2 rounded-md border bg-input-background px-3 py-2 whitespace-nowrap transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 border-neutral-300 h-8 text-xs"
-                        [class.border-red-500]="condition.get('question')?.invalid && condition.get('question')?.touched">
+
+                      <select formControlName="question" (change)="getConditions(i).at(j).get('answer')?.setValue('')"
+                        class="flex w-full items-center justify-between gap-2 rounded-md border bg-input-background px-3 py-2 transition-all outline-none border-neutral-300 h-8 text-xs">
                         <option value="" disabled selected>Select question</option>
                         @for (q of getAvailableQuestionsForQuota(); track q.value) {
                         <option [value]="q.value">{{ q.label }}</option>
                         }
                       </select>
 
-                      <!-- Answer Input -->
-                      <input type="text" formControlName="answer" placeholder="e.g., Male"
-                        class="flex w-full min-w-0 rounded-md border px-3 py-1 bg-input-background transition-[color,box-shadow] outline-none disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 text-sm focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] border-neutral-300 h-8 text-xs"
+                      <!-- <select formControlName="answer" [disabled]="!condition.get('question')?.value"
+                        class="flex w-full items-center justify-between gap-2 rounded-md border bg-input-background px-3 py-2 transition-all outline-none border-neutral-300 h-8 text-xs"
                         [class.border-red-500]="condition.get('answer')?.invalid && condition.get('answer')?.touched">
+                        <option value="" disabled selected>Select answer</option>
+                        @for (opt of getOptionsForCondition(i, j); track opt.id) {
+                        <option [value]="opt.id">{{ opt.label }}</option>
+                        }
+                      </select> -->
+                      <select 
+                      formControlName="answer"
+                      class="flex w-full items-center justify-between gap-2 rounded-md border px-3 py-2 transition-all outline-none border-neutral-300 h-8 text-xs"
+                      [class.border-red-500]="condition.get('answer')?.invalid && condition.get('answer')?.touched"
+                      [class.bg-gray-100]="!condition.get('question')?.value"
+                      [class.bg-input-background]="condition.get('question')?.value"
+                      [style.pointer-events]="!condition.get('question')?.value ? 'none' : 'auto'"
+                      [attr.tabindex]="!condition.get('question')?.value ? -1 : 0">
+                      
+                      <option value="" disabled selected>Select answer</option>
+                      
+                      @for (opt of getOptionsForCondition(i, j); track opt.id) {
+                        <option [value]="opt.id">{{ opt.label }}</option>
+                      }
+                    </select>
+
                     </div>
 
-                    <!-- Remove Condition Button -->
                     <button type="button" (click)="removeCondition(i, j)"
                       class="p-1 hover:bg-neutral-200 rounded shrink-0">
                       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                        class="w-4 h-4 text-neutral-700">
-                        <path d="M18 6 6 18"></path>
-                        <path d="m6 6 12 12"></path>
+                        stroke="currentColor" stroke-width="2" class="w-4 h-4 text-neutral-700">
+                        <path d="M18 6 6 18" />
+                        <path d="m6 6 12 12" />
                       </svg>
                     </button>
                   </div>
@@ -314,7 +334,7 @@
 
       <div class="action-right">
         @if (currentStep() == 2) { <button type="button" class="btn btn-primary"
-          [disabled]="currentStep() === 1 && form.invalid" (click)="onFinish()">
+          [disabled]="currentStep() === 1 && form.invalid" (click)="onFinish(true)">
           Skip & Finish
         </button>
         }
@@ -324,7 +344,7 @@
           Next Step
           </button>
           } @else {
-          <button type="button" class="btn btn-primary" (click)="onFinish()">
+          <button type="button" class="btn btn-primary" (click)="onFinish(false)">
             Finish
           </button>
           }

@@ -98,7 +98,7 @@ export class AddPanel {
     const selections = this.selectedOptions();
     const addedIds = this.addedQuestionIds();
 
-    const summary: { id: number; title: string; options: string[] }[] = [];
+    const summary: { id: number; title: string; options: any[] }[] = [];
 
     addedIds.forEach(qId => {
       const optionSet = selections[qId];
@@ -110,7 +110,10 @@ export class AddPanel {
             title: question.question,
             options: question.options
               .filter(opt => optionSet.has(opt.opt_id))
-              .map(opt => opt.option_value)
+              .map(opt => ({
+                id: opt.opt_id,
+                label: opt.option_value
+              }))
           });
         }
       }
@@ -344,28 +347,93 @@ export class AddPanel {
     this.close.emit();
   }
 
-  onFinish(): void {
-    // Validate quotas on step 3
-    if (this.currentStep() === 3 && this.quotas.invalid) {
-      this.markFormGroupTouched(this.quotas);
-      return;
-    }
-
-    const submission = {
-      ...this.form.value,
-      qualifications: this.getFinalQualifications(),
-      quotas: this.form.value.quotas, // Include quotas in submission
-      timestamp: new Date().toISOString()
-    };
-    console.log('Submitting:', submission);
-    this.onCancel();
+ onFinish(skip?: boolean ): void {
+  // 1. Validate quotas if on the final step
+  if (this.currentStep() === 3 && this.quotas.invalid) {
+    this.markFormGroupTouched(this.quotas);
+    return;
   }
+
+  // 2. Generate the dynamic payload
+  //  const payload = {
+  //    panel: {
+  //      panel_provider_id: this.form.value.panelProvider,
+  //      target_completes: this.form.value.maxComplete,
+  //      cpi: this.form.value.cpi,
+  //      entry_url: this.form.value.entryUrl,
+  //    },
+  //    qualifications: this.selectedSummary().map(item => ({
+  //      qs_id: item.id,
+  //      option_ids: item.options.map(o => o.id)
+  //    })),
+  //    quotas: this.form.value.quotas.map((q: any) => ({
+  //      quota_name: q.name,
+  //      target: q.target,
+  //      conditions: q.conditions.map((cond: any) => ({
+  //        qs_id: cond.question ? Number(cond.question) : null,
+  //        opt_id: cond.answer ? Number(cond.answer) : null
+  //      }))
+  //    })),
+  //    skip: skip
+  //  };
+  // 1. Prepare the common panel data
+const panelData = {
+  panel_provider_id: this.form.value.panelProvider,
+  target_completes: this.form.value.maxComplete,
+  cpi: this.form.value.cpi,
+  entry_url: this.form.value.entryUrl,
+};
+
+let payload;
+
+if (skip) {
+  // 2. Simple payload if skip is true
+  payload = {
+    panel: panelData,
+    skip: true
+  };
+} else {
+  // 3. Full payload if skip is false
+  payload = {
+    panel: panelData,
+    qualifications: this.selectedSummary().map(item => ({
+      qs_id: item.id,
+      option_ids: item.options.map(o => o.id)
+    })),
+    quotas: this.form.value.quotas.map((q: any) => ({
+      quota_name: q.name,
+      target: q.target,
+      // Fixed: Now maps multiple conditions within one quota
+      conditions: q.conditions.map((cond: any) => ({
+        qs_id: cond.question ? Number(cond.question) : null,
+        opt_id: cond.answer ? Number(cond.answer) : null
+      }))
+    })),
+    skip: false
+  };
+}
+
+  // 3. Log and process
+  console.log('Dynamic Payload:', payload);
+
+  // If you still need the full local submission object for other logic:
+  const submission = {
+    ...this.form.value,
+    qualifications: this.getFinalQualifications(),
+    timestamp: new Date().toISOString()
+  };
+  console.log('Submitting Meta:', submission);
+
+  // Close/Reset
+  this.onCancel();
+}
 
   private getFinalQualifications() {
     return this.selectedSummary().map(item => ({
       questionId: item.id,
       questionLabel: item.title,
-      selectedOptionLabels: item.options
+      selectedOptionIds: item.options.map(o => o.id),
+      selectedOptionLabels: item.options.map(o => o.label)
     }));
   }
 
@@ -382,6 +450,38 @@ export class AddPanel {
       }
     });
   }
+
+  getOptionLabels(item: any): string {
+    return item.options.map((o: any) => o.label).join(', ');
+  }
+
+  // Inside AddPanel class
+
+  /**
+   * Helper to get the options available for a specific condition row.
+   * It looks up the questionId currently selected in that row's dropdown.
+   */
+  getOptionsForCondition(quotaIndex: number, conditionIndex: number): UIOption[] {
+    const conditionGroup = this.getConditions(quotaIndex).at(conditionIndex);
+    const questionId = conditionGroup.get('question')?.value;
+
+    if (!questionId) return [];
+
+    // Find the question in our selected summary to get its specific options
+    const selectedQuestion = this.selectedSummary().find(
+      (q) => q.id.toString() === questionId.toString()
+    );
+
+    return selectedQuestion ? selectedQuestion.options : [];
+  }
+
+  /**
+   * Update the createCondition to initialize answer with empty string
+   */
+
+
+
+
 }
 
 
