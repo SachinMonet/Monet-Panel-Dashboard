@@ -91,6 +91,7 @@
     .icon {
       width: 1rem;
       height: 1rem;
+      display: contents;
       color: var(--color-text-secondary);
     }
 
@@ -185,6 +186,7 @@
   .step-check-icon {
     width: 1rem;
     height: 1rem;
+    display: contents;
   }
 }
 

@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, EventEmitter, inject, Output, signal } from '@angular/core';
+import { Component, computed, EventEmitter, inject, Input, Output, signal } from '@angular/core';
 import { FormArray, FormBuilder, FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ApiService } from '../../core/services/api';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -41,11 +41,12 @@ export class AddPanel {
     { initialValue: '' }
   );
   @Output() close = new EventEmitter<void>();
+  @Input() panelId: number | null = null;
 
   // Form Configuration
   form: FormGroup = this.fb.group({
     panelProvider: ['', Validators.required],
-    maxComplete: ['', [Validators.required, Validators.min(1)]],
+    maxComplete: ['auto', [Validators.required, ]],
     cpi: ['', [Validators.required, Validators.min(0.01)]],
     entryUrl: ['', [Validators.required]],
     // ADD: Quotas FormArray
@@ -235,10 +236,13 @@ export class AddPanel {
         this.isLoading.set(false);
       }
     });
-
+this.isLoading.set(true);
     this.apiService.get('panel-providers').subscribe({
+      
       next: (res: any) => {
+        this.isLoading.set(false);
         this.panelProviders.set(res.data);
+        this.form.patchValue({ panelProvider: this.panelProviders()[0].id });
         // optional: if you want loader to wait for both calls,
         // move isLoading.set(false) here and track both with a counter
       },
@@ -415,6 +419,19 @@ if (skip) {
 
   // 3. Log and process
   console.log('Dynamic Payload:', payload);
+  let id = localStorage.getItem('campaignId');    ////static make dynamic for multiple campaign
+  console.log("id",this.panelId,"pannel id ");
+  
+  this.apiService.post<any>('survey/campaigns/'+id+'/final-submit', payload).subscribe({
+    next: (res: any) => {
+      console.log('Response:', res);
+      this.onCancel();
+    },
+    error: (err) => {
+      console.error('Failed to add panel', err);
+      this.onCancel();
+    }
+  })
 
   // If you still need the full local submission object for other logic:
   const submission = {

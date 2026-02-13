@@ -49,14 +49,14 @@
             <label for="panel-provider" class="form-label">Choose Panel</label>
             <select id="panel-provider" class="form-input" formControlName="panelProvider">
               @for (d of panelProviders(); track d.id) {
-              <option [value]="d.id">{{ d.name }}</option>
+              <option [value]="d.id">{{ d.provider_name }}</option>
               }
             </select>
           </div>
 
           <div class="form-field">
             <label class="form-label">Max Complete <span class="required">*</span></label>
-            <input type="number" class="form-input" placeholder="e.g. 500" formControlName="maxComplete" />
+            <input type="text" class="form-input" placeholder="e.g. 500" formControlName="maxComplete" />
           </div>
 
           <div class="form-field">

@@ -23,7 +23,11 @@ import {
   Eye,
   ArrowLeft,
   PenSquare,
-  Check
+  Check,
+  ChevronRight,
+  CornerDownRight,
+  Trash2,
+  User
 } from 'lucide-angular';
 
 
@@ -57,6 +61,11 @@ import {
       Eye,
       ArrowLeft,
       Check, 
+      ChevronRight,
+      CornerDownRight,
+      Trash2,
+      User,
+      
       
     }),
     CommonModule,
