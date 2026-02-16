@@ -137,7 +137,7 @@
 
                                         @for (panel of panels.controls; track $index) {
                                         <tr class="panel-row" [formGroupName]="$index">
-                                            <td>{{ panel.get('providerName').value }}</td>
+                                            <td>{{ panel?.get('providerName')?.value }}</td>
 
                                             <td>
                                                 <input type="text" class="input-number" placeholder="0"
@@ -174,63 +174,74 @@
                 }
 
                 @case (3) {
-                <div class="review-container">
-                    <div class="review-shell">
-                        <h2 class="review-title">Review & Launch</h2>
-                        <div class="review-content">
-
-                            <div class="review-card">
-                                <h3 class="review-card__title">Campaign Details</h3>
-                                <div class="review-grid">
-                                    <div class="review-row"><span class="review-label">Name:</span> <span
-                                            class="review-value">{{ form.get('campaignName').value || 'Not set'
-                                            }}</span></div>
-                                    <div class="review-row"><span class="review-label">Country:</span> <span
-                                            class="review-value">{{ form.get('country').value || 'Not set' }}</span>
-                                    </div>
-                                    <div class="review-row"><span class="review-label">LOI:</span> <span
-                                            class="review-value">{{ (form.get('loi').value) ? form.get('loi').value +
-                                            ' min' : 'Not set' }}</span></div>
-                                    <div class="review-row"><span class="review-label">IR:</span> <span
-                                            class="review-value">{{ (form.get('ir').value) ? form.get('ir').value +
-                                            '%' : 'Not set' }}</span></div>
-                                    <div class="review-row"><span class="review-label">Target:</span> <span
-                                            class="review-value">{{ form.get('targetCompletes').value || 'Not set'
-                                            }}</span></div>
-                                </div>
-                            </div>
-
-                            <div class="review-card">
-                                <h3 class="review-card__title">Panel Allocation</h3>
-                                <div class="review-panel-list">
-                                    @if (panels.length === 0) {
-                                    <div class="review-panel-row">No panels allocated</div>
-                                    }
-
-                                    @for (panel of panels.controls; track $index) {
-                                    <div class="review-panel-row">
-                                        <span class="review-panel-name">{{ panel.get('providerName').value }}</span>
-                                        <span class="review-panel-meta">
-                                            {{ panel.get('target').value }} completes @ ${{ panel.get('cpi').value }}
-                                            CPI
-                                        </span>
-                                    </div>
-                                    }
-                                </div>
-                                <div class="review-total">
-                                    <span>Total Allocated</span>
-                                    <span>{{ allocatedTotal }} completes</span>
-                                </div>
-                            </div>
+                <div class="review-card">
+                    <h3 class="review-card__title">Campaign Details</h3>
+                    <div class="review-grid">
+                        <div class="review-row">
+                            <span class="review-label">Name:</span>
+                            <span class="review-value">
+                                {{ reviewData()?.campaign_details?.name || 'Not set' }}
+                            </span>
                         </div>
 
-                        <div class="review-actions">
-                            <button type="button" class="btn btn--secondary" (click)="previousStep()">Back</button>
-                            <button type="button" class="btn btn--primary" (click)="submitForm()"
-                                [disabled]="!form.valid">Launch Campaign</button>
+                        <div class="review-row">
+                            <span class="review-label">Country:</span>
+                            <span class="review-value">
+                                {{ reviewData()?.campaign_details?.country?.name || 'Not set' }}
+                            </span>
+                        </div>
+
+                        <div class="review-row">
+                            <span class="review-label">LOI:</span>
+                            <span class="review-value">
+                                {{ reviewData()?.campaign_details?.loi ? reviewData().campaign_details.loi + ' min' :
+                                'Not set' }}
+                            </span>
+                        </div>
+
+                        <div class="review-row">
+                            <span class="review-label">IR:</span>
+                            <span class="review-value">
+                                {{ reviewData()?.campaign_details?.ir ? reviewData().campaign_details.ir + '%' : 'Not
+                                set' }}
+                            </span>
+                        </div>
+
+                        <div class="review-row">
+                            <span class="review-label">Target:</span>
+                            <span class="review-value">
+                                {{ reviewData()?.campaign_details?.total_target || 'Not set' }}
+                            </span>
                         </div>
                     </div>
                 </div>
+
+                <div class="review-card">
+                    <h3 class="review-card__title">Panel Allocation</h3>
+                    <div class="review-panel-list">
+
+                        @if (!reviewData()?.panel_allocation?.length) {
+                        <div class="review-panel-row">No panels allocated</div>
+                        }
+
+                        @for (panel of reviewData()?.panel_allocation; track $index) {
+                        <div class="review-panel-row">
+                            <span class="review-panel-name">
+                                {{ panel.panel_provider_name}}
+                            </span>
+                            <span class="review-panel-meta">
+                                {{ panel.target_completes }} completes @ ${{ panel.cpi }} CPI
+                            </span>
+                        </div>
+                        }
+                    </div>
+
+                    <div class="review-total">
+                        <span>Total Allocated</span>
+                        <span>{{ reviewData()?.summary?.total_completes }} completes</span>
+                    </div>
+                </div>
+
                 }
 
                 @default {
@@ -323,9 +334,11 @@
                         Continue
                         </button>
                         } @else {
-                        <button class="btn btn--primary" (click)="submitForm()" [disabled]="!form.valid">
-                            Submit
+                        <button class="btn btn--primary" (click)="submitForm()">
+                            Launch Campaign
                         </button>
+
+
                         }
                 </div>
                 }

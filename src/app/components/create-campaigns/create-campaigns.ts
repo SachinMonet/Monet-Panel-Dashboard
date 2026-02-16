@@ -1,9 +1,9 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, OnInit, signal } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, Signal, signal } from '@angular/core';
 import { LucideModule } from '../../lucide/lucide-module';
 import { LucideAngularModule } from 'lucide-angular';
 import { FormArray, FormBuilder, FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import { RouterLink } from "@angular/router";
+import { Router, RouterLink } from "@angular/router";
 import { ApiService } from '../../core/services/api';
 import { AddPanel } from '../add-panel/add-panel';
 
@@ -19,7 +19,7 @@ import { AddPanel } from '../add-panel/add-panel';
 export class CreateCampaigns implements OnInit {
 
   currentStep: any = 1;
-  totalSteps = 4;
+  totalSteps = 3;
   allocationMode: 'manual' | 'auto' = 'manual';
   form!: FormGroup;
   isLoading: any = signal(false);
@@ -43,7 +43,7 @@ export class CreateCampaigns implements OnInit {
       stepNumber: 2,
       stepName: 'Panels',
       title: 'Panel Configuration',
-      controls: [], 
+      controls: [],
       array: true
     },
     {
@@ -58,12 +58,12 @@ export class CreateCampaigns implements OnInit {
   countries: any[] = [];
   campaignId: any;
   isAddPanelOpen = false;
-  reviewData: any;
+  reviewData = signal<any>({});
 
   private languagesLoaded = false;
   private countriesLoaded = false;
 
-  constructor(private fb: FormBuilder, private _api: ApiService, private cdr: ChangeDetectorRef) { }
+  constructor(private fb: FormBuilder, private _api: ApiService, private cdr: ChangeDetectorRef, private router: Router) { }
 
   ngOnInit() {
 
@@ -73,7 +73,6 @@ export class CreateCampaigns implements OnInit {
 
     this.isLoading.set(true);
 
-    // Simulate API calls
     this._api.get('languages').subscribe({
       next: (res: any) => { this.languages = res.data; this.languagesLoaded = true; this.checkAllLoaded(); },
       error: () => { this.languagesLoaded = true; this.checkAllLoaded(); },
@@ -90,7 +89,7 @@ export class CreateCampaigns implements OnInit {
     if (this.currentStep > 1) {
       this.getData();
       this.loadDataRows()
-     // this.getReviewData();
+      this.getReviewData();
     }
     this.form.get('Basics')?.valueChanges.subscribe((val: any) => {
       console.log({ currentStepData: this.currentStepData });
@@ -103,24 +102,32 @@ export class CreateCampaigns implements OnInit {
     this._api.get(`survey/campaigns/basic/${this.campaignId}`).subscribe((res: any) => {
       console.log(res);
       if (res && !res.error) {
-        this.form.get(this.steps[0].stepName).patchValue(res.data);
-        this.form.get(this.steps[0].stepName).patchValue({ targetCompletes: res.data.total_completes }, { country: res.data.country_id, language: res.data.language_id });
+        this.form.get(this.steps[0].stepName)?.patchValue({
+          targetCompletes: res.data.total_completes,
+          country: res.data.country_id,
+          language: res.data.language_id,
+          loi: res.data.loi,
+          ir: res.data.ir,
+          campaignName: res.data.campaignName
+        });
 
         this.formChanged.set(false);
       }
     });
   }
 
-  // getReviewData() {
-  //   this._api.get(`campaigns/${this.campaignId}/review`).subscribe((res: any) => {
-  //     console.log(res);
-  //     if (res && !res.error) {
-  //       this.reviewData = res
-  //      console.log("reviwe ==>",this.reviewData );
-  //       this.formChanged.set(false);
-  //     }
-  //   });
-  // }
+  getReviewData() {
+    this.isLoading.set(true);
+    this._api.get(`campaigns/${this.campaignId}/review`).subscribe((res: any) => {
+      console.log(res);
+      if (res && !res.error) {
+        this.isLoading.set(false);
+        this.reviewData.set(res);
+        console.log("reviwe ==>", this.reviewData);
+        this.formChanged.set(false);
+      }
+    });
+  }
 
   private checkAllLoaded() {
     console.log(this.languagesLoaded, this.countriesLoaded);
@@ -150,14 +157,15 @@ export class CreateCampaigns implements OnInit {
   }
 
   get panels(): FormArray {
-    return this.form.get(this.currentStepData.stepName) as FormArray;
+    return this.form.get("Panels") as FormArray;   // stepName = 'Panels'
   }
 
 
 
 
   addPanel() {
-    this.isAddPanelOpen = true;
+    //this.isAddPanelOpen = true;
+    console.log("this.isAddPanelOpen")
   }
 
   closeAddPanel() {
@@ -170,20 +178,21 @@ export class CreateCampaigns implements OnInit {
     this.isAddPanelOpen = false;
   }
 
+
   addPanelToForm(data: any = null) {
-    const dummyProvider = ['Lucid', 'Cint', 'Dynata', 'Spectra'][this.panels.length % 4];
+    const panelsArray = this.form.get('Panels') as FormArray;
+    if (!panelsArray) return;
+
+    const dummyProvider = ['Lucid', 'Cint', 'Dynata', 'Spectra'][panelsArray.length % 4];
 
     const panelGroup = this.fb.group({
       providerName: [data ? data.name : dummyProvider, Validators.required],
       target: [data ? data.target : 0, [Validators.required]],
       cpi: [data ? data.cpi : 2.50, [Validators.required, Validators.min(0)]],
-      status:  data.status 
+      status: [data?.status ?? 'active']
     });
 
-    this.panels.push(panelGroup);
-
-    if (this.allocationMode === 'auto') {
-    }
+    panelsArray.push(panelGroup);
   }
 
 
@@ -193,44 +202,43 @@ export class CreateCampaigns implements OnInit {
   }
 
 
-  loadDataRows() {
- 
-    this._api.get(`campaigns/${this.campaignId}/panels`).subscribe((res: any) => {
-         let panelList
-      panelList = res.data;
-      console.log(panelList);
-      panelList.forEach((row) => {
 
+  loadDataRows() {
+    this.isLoading.set(true);
+    const panelsArray = this.form.get('Panels') as FormArray;
+    if (!panelsArray) return;
+
+    this._api.get(`campaigns/${this.campaignId}/panels`).subscribe((res: any) => {
+      this.isLoading.set(false);
+
+      const panelList = res?.data || [];
+      panelList.forEach((row: any) => {
         const panelGroup = this.fb.group({
-          providerName: [row.provider.name, Validators.required],
+          providerName: [row.provider?.name, Validators.required],
           target: [row.max_completes, [Validators.required, Validators.min(1)]],
-          cpi: [row.cpi, [Validators.required, Validators.min(0.1)]]
+          cpi: [row.cpi, [Validators.required, Validators.min(0.1)]],
+          status: [row.status ?? 'active']   // optional
         });
 
-        this.panels.push(panelGroup);
+        panelsArray.push(panelGroup);
       });
-      if (this.allocationMode === 'auto') {
-        
-      }
-    })
-
-
+    });
   }
 
 
+
   setAllocationMode(mode: 'manual' | 'auto') {
-   
+
     this.allocationMode = mode;
-    console.log(this.allocationMode);
+    console.log("this.allocationMode", this.allocationMode);
     const panelControls = this.panels.controls;
 
     if (mode === 'manual') {
       panelControls.forEach(group => group.get('target')?.enable());
-     panelControls.forEach(group => group.get('target')?.patchValue(0));
+      panelControls.forEach(group => group.get('target')?.patchValue(0));
     } else {
       panelControls.forEach(group => group.get('target')?.disable());
-          panelControls.forEach(group => group.get('target')?.patchValue('auto'));
-      // Logic to auto-distribute targets could go here
+      panelControls.forEach(group => group.get('target')?.patchValue('Auto'));
     }
   }
 
@@ -304,11 +312,27 @@ export class CreateCampaigns implements OnInit {
   previousStep() {
     if (this.currentStep > 1) {
       this.currentStep--;
+      localStorage.setItem('currentStep', JSON.stringify(this.currentStep));
+      //this.formChanged.set(false);
     }
-    this.formChanged.set(false);
+
   }
 
   submitForm() {
+    this._api.post(`campaigns/${this.campaignId}/launch`, '').subscribe((res: any) => {
+      if (res && !res.error) {
+        this.isLoading.set(false);
+        this.formChanged.set(false);
+        this.router.navigate(['dashboard']);
+        localStorage.removeItem('currentStep');
+        localStorage.removeItem('basicData');
+        localStorage.removeItem('campaignId');
+
+      }
+      console.log(res);
+    })
+    console.log("this.reviewData()", this.reviewData())
+    console.log(this.form.value);
     if (this.form.valid) {
       console.log('Final Payload:', this.form.value);
     }
