@@ -2,11 +2,11 @@ import { Component } from '@angular/core';
 import { LucideModule } from '../../lucide/lucide-module';
 import { LucideAngularModule, } from 'lucide-angular';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-dashboard',
-  imports: [LucideModule, LucideAngularModule, CommonModule,],
+  imports: [LucideModule, LucideAngularModule, CommonModule,RouterLink],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.scss',
 })

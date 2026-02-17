@@ -27,7 +27,8 @@ import {
   ChevronRight,
   CornerDownRight,
   Trash2,
-  User
+  User,
+  ChevronDown
 } from 'lucide-angular';
 
 
@@ -65,6 +66,7 @@ import {
       CornerDownRight,
       Trash2,
       User,
+      ChevronDown
       
       
     }),

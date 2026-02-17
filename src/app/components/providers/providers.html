@@ -1,95 +1,347 @@
-<main class="providers-main">
-  <div class="providers-container">
+<div class="panel-page">
+  <div class="panel-container">
     <!-- Header -->
-    <div class="providers-header">
-      <div>
-        <h2 class="providers-title">Panel Providers</h2>
-        <p class="providers-subtitle">Manage your panel provider configurations</p>
+    <header class="panel-header">
+      <div class="panel-header__inner">
+        <button class="panel-header__back-btn" type="button" routerLink="/dashboard">
+          <lucide-icon name="arrow-left" class="icon-20"></lucide-icon>
+        </button>
+
+        <div class="panel-header__logo">
+          <span>PM</span>
+        </div>
+
+        <h1 class="panel-header__title">
+          Panel Provider Management
+        </h1>
       </div>
+    </header>
 
-      <button class="btn-primary">
-        <span class="btn-icon">
-          <lucide-icon [name]="addButton.icon"></lucide-icon>
-        </span>
-        <span>{{ addButton.label }}</span>
-      </button>
-    </div>
+    <!-- Main -->
+    <main class="panel-main">
+      <div class="panel-main__content">
+        <!-- Top right button -->
+        @if(!showWizard) {<div class="panel-toolbar">
+          <button class="btn-primary" type="button" (click)="addPanel()">
+            <lucide-icon name="plus" class="icon-16"></lucide-icon>
+            Add New Panel Provider
+          </button>
+        </div>}
 
-    <!-- Filters -->
-    <div class="providers-filters">
-      <div class="search-wrapper">
-        <span class="search-icon">
-          <lucide-icon name="search"></lucide-icon>
-        </span>
-        <input type="text" [placeholder]="filters.searchPlaceholder" class="search-input" [(ngModel)]="searchFilterBykey" (keyup)="searchFilter($event)" />
+        <!-- Table -->
+      @if(!showWizard) { <div class="panel-table-wrapper">
+          <table class="panel-table">
+            <thead>
+              <tr>
+                <th>Provider Name</th>
+                <th>Panel ID</th>
+                <th>Region</th>
+                <th>Status</th>
+                <th>API Health</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              @for (provider of providers; track provider.panelId; let i = $index) {
+                <tr [class.row-alt]="i % 2 === 1">
+                  <td class="td-name">
+                    {{ provider.name }}
+                  </td>
+
+                  <td>
+                    {{ provider.panelId }}
+                  </td>
+
+                  <td>
+                    {{ provider.region }}
+                  </td>
+
+                  <td>
+                    <span [class]="statusClass(provider.status)">
+                      {{ statusLabel(provider.status) }}
+                    </span>
+                  </td>
+
+                  <td>
+                    <div class="api-health">
+                      @if (apiIcon(provider.status)) {
+                        <lucide-icon
+                          [name]="apiIcon(provider.status)"
+                          class="api-health__icon"
+                          [ngClass]="{
+                            'api-health__icon--ok': provider.status === 'active',
+                            'api-health__icon--bad': provider.status === 'degraded'
+                          }"
+                        ></lucide-icon>
+                      } @else {
+                        <div class="api-health__dot"></div>
+                      }
+
+                      <span>{{ apiText(provider.status) }}</span>
+                    </div>
+                  </td>
+
+                  <td>
+                    <div class="panel-actions">
+                      <button type="button" class="btn-ghost">
+                        View
+                      </button>
+
+                      <button type="button" class="btn-ghost">
+                        <lucide-icon
+                          name="square-pen"
+                          class="icon-16"
+                        ></lucide-icon>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>}
       </div>
+@if (showWizard) {
+  <main class="panel-wizard">
+    <div class="panel-wizard__container">
 
-      <select class="select" (change)="filterByStatus($event.target)">
-        @for( opt of filters.statusOptions; track $index) {<option>{{ opt }}</option>
-      }
-      </select>
-    </div>
+      <!-- Steps bar -->
+      <div class="wizard-steps">
+        @for (item of steps; track item.step; let last = $last) {
+          <div class="wizard-steps__item">
+            <div
+              class="wizard-steps__circle"
+              [class.wizard-steps__circle--active]="currentStep === item.step"
+              [class.wizard-steps__circle--completed]="currentStep > item.step"
+            >
+              {{ item.step }}
+            </div>
+            <div class="wizard-steps__label">
+              {{ item.label }}
+            </div>
+          </div>
 
-    <!-- Table -->
-    <div class="table-wrapper">
-      <table class="table">
-        <thead>
-          <tr>
-            <th>Provider</th>
-            <th>Status</th>
-            <th>Active Campaigns</th>
-            <th>Total Completes</th>
-            <th>Quality Score</th>
-            <th>Avg CPI</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-
-        <tbody>
-          @for( p of filteredRows; track $index){<tr class="row">
-            <td>
-              <div class="provider-cell">
-                <p class="provider-name">{{ p.name }}</p>
-                <p class="provider-code">{{ p.code }}</p>
-              </div>
-            </td>
-
-            <td>
-              <div class="status-cell">
-                <lucide-icon [name]="p.statusIcon" [ngClass]="getStatusIconClass(p.status)">
-                </lucide-icon>
-                <span [ngClass]="getStatusBadgeClass(p.status)">
-                  {{ p.status }}
-                </span>
-              </div>
-            </td>
-
-            <td class="numeric-cell">{{ p.activeCampaigns }}</td>
-            <td class="numeric-cell">{{ p.totalCompletes }}</td>
-
-            <td>
-              <div class="quality-cell">
-                <span>{{ p.quality }}</span>
-                @if(p.qualityDot) { <span class="quality-dot quality-dot--green">
-                </span>
-              }
-              </div>
-            </td>
-
-            <td class="numeric-cell">{{ p.avgCpi }}</td>
-
-            <td>
-              <div class="actions-cell">
-                @for(icon of actionIcons; track $index) {<button class="icon-button">
-                  <lucide-icon [name]="icon"></lucide-icon>
-                </button>
-              }
-              </div>
-            </td>
-          </tr>
+          @if (!last) {
+            <div class="wizard-steps__line"></div>
+          }
         }
-        </tbody>
-      </table>
+      </div>
+
+      <!-- Card -->
+      <div class="wizard-card">
+        <!-- Step header -->
+        <h2 class="wizard-card__title">
+          @if (currentStep === 1) { Basic Information }
+          @else if (currentStep === 2) { API Credentials }
+          @else if (currentStep === 3) { Inbound Parameters }
+          @else if (currentStep === 4) { Redirect URLs}
+          @else { Test Connection }
+        </h2>
+
+        <!-- Step 1 body -->
+        @if (currentStep === 1) {
+          <div class="wizard-card__fields">
+            <div class="field">
+              <label for="provider-name" class="field__label">Provider Name</label>
+              <input
+                id="provider-name"
+                type="text"
+                class="field__input"
+                placeholder="e.g. Lucid"
+              />
+            </div>
+
+            <div class="field">
+              <label for="panel-id" class="field__label">Panel ID</label>
+              <input
+                id="panel-id"
+                type="text"
+                class="field__input"
+                placeholder="e.g. LUC1"
+              />
+            </div>
+
+            <div class="field">
+              <label for="region" class="field__label">Region</label>
+              <select
+                id="region"
+                class="field__input"
+                [(ngModel)]="selectedRegion"
+              >
+                <option value="" disabled>Select region</option>
+                @for (r of region; track r) {
+                  <option [value]="r.id">{{ r.region_name}}</option>
+                }
+              </select>
+            </div>
+          </div>
+        }
+
+        <!-- Step 2 body -->
+        @if (currentStep === 2) {
+          <div class="wizard-card__fields">
+             <div class="field">
+              <label class="field__label">API Endpoint</label>
+              <input
+                type="text"
+                class="field__input"
+                placeholder="https://api.example.com/v1"
+              />
+            </div>
+            <div class="field">
+              <label class="field__label">API Key</label>
+              <input
+                type="text"
+                class="field__input"
+                placeholder="Enter API key"
+              />
+            </div>
+
+            <div class="field">
+              <label class="field__label">API Secret</label>
+              <input
+                type="password"
+                class="field__input"
+                placeholder="Enter API secret"
+              />
+            </div>
+          </div>
+        }
+
+        <!-- Step 3 body -->
+        @if (currentStep === 3) {
+          <div class="wizard-card__fields">
+            <div class="field">
+              <label class="field__label">Panel ID Parameter Name</label>
+              <input
+                type="text"
+                class="field__input"
+                placeholder="pid"
+              />
+            </div>
+
+            <div class="field">
+              <label class="field__label">Session ID Parameter Name</label>
+              <input
+                type="text"
+                class="field__input"
+                placeholder="sid"
+              />
+            </div>
+                <div class="field">
+              <label class="field__label">Custom Parameters (comma separated)</label>
+              <input
+                type="text"
+                class="field__input"
+                placeholder="param1,param2,param3"
+              />
+            </div>
+          </div>
+        }
+
+        <!-- Step 4 body -->
+        @if (currentStep === 4) {
+          <div class="wizard-card__fields">
+            <div class="field">
+              <label class="field__label">Success URL</label>
+              <input
+                type="text"
+                class="field__input"
+                placeholder="https://panel.example.com/success?pid=[PID]&sid=[SID]"
+              />
+            </div>
+
+            <div class="field">
+              <label class="field__label">Termination URL</label>
+              <input
+                type="text"
+                class="field__input"
+                placeholder="https://panel.example.com/terminate?pid=[PID]&sid=[SID]"
+              />
+            </div>
+             <div class="field">
+              <label class="field__label">Overquota URL</label>
+              <input
+                type="text"
+                class="field__input"
+                placeholder="https://panel.example.com/overquota?pid=[PID]&sid=[SID]"
+              />
+            </div>
+             <div class="field">
+              <label class="field__label">Quality Fail URL</label>
+              <input
+                type="text"
+                class="field__input"
+                placeholder="https://panel.example.com/qualityfail?pid=[PID]&sid=[SID]"
+              />
+            </div>
+          </div>
+        }
+
+   
+          @if (currentStep === 5) {
+  <div class="wizard-card__fields">
+    <!-- <h2 class="wizard-card__title">Test Connection</h2> -->
+
+    <div class="test-card">
+      <div class="test-card__info">
+        <div class="test-row">
+          <span class="test-row__label">Provider Name:</span>
+          <span class="test-row__value">Not set</span>
+        </div>
+
+        <div class="test-row">
+          <span class="test-row__label">Region:</span>
+          <span class="test-row__value">global</span>
+        </div>
+
+        <div class="test-row">
+          <span class="test-row__label">API Endpoint:</span>
+          <span class="test-row__value">Not set</span>
+        </div>
+      </div>
+
+      <div class="test-card__cta">
+        <div class="test-card__text">
+          Test connection to verify credentials
+        </div>
+
+        <button type="button" class="btn-secondary">
+          Run Connection Test
+        </button>
+      </div>
+
+ 
     </div>
   </div>
-</main>
+}
+
+
+        <!-- Footer buttons -->
+        <div class="wizard-card__footer">
+          <button
+            type="button"
+            class="btn-ghost"
+            [disabled]="currentStep === 1"
+            (click)="currentStep = currentStep - 1"
+          >
+            Back
+          </button>
+
+          <button
+            type="button"
+            class="btn-primary"
+            (click)="currentStep < 5 ? currentStep = currentStep + 1 : onFinish()"
+          >
+            {{ currentStep < 5 ? 'Continue' : 'Save Provider' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+}
+
+    </main>
+  </div>
+</div>

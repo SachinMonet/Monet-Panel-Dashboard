@@ -1,133 +1,105 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { LucideModule } from '../../lucide/lucide-module';
 import { LucideAngularModule } from 'lucide-angular';
 import { FormsModule } from '@angular/forms';
 import { Login } from '../login';
+import { RouterLink } from '@angular/router';
+import { ApiService } from '../../core/services/api';
 
 @Component({
   selector: 'app-providers',
-  imports: [CommonModule, LucideModule, LucideAngularModule,FormsModule],
+  imports: [CommonModule, LucideModule, LucideAngularModule,FormsModule,RouterLink,FormsModule],
   templateUrl: './providers.html',
   styleUrl: './providers.scss',
 })
-export class Providers {
-  searchFilterBykey: any;
-  addButton = {
-    icon: 'plus',
-    label: 'Add Provider'
-  };
-
-  filters = {
-    searchPlaceholder: 'Search providers...',
-    statusOptions: ['All Status', 'Active', 'Pending', 'Inactive']
-  };
-
-  providers: ProviderRow[] = [
-    {
-      name: 'Provider A',
-      code: 'PVDR_A',
-      status: 'Active',
-      statusIcon: 'circle-check-big',
-      activeCampaigns: 8,
-      totalCompletes: '12,450',
-      quality: '94%',
-      qualityDot: true,
-      avgCpi: '$3.50'
-    },
-    {
-      name: 'Provider B',
-      code: 'PVDR_B',
-      status: 'Active',
-      statusIcon: 'circle-check-big',
-      activeCampaigns: 6,
-      totalCompletes: '8,920',
-      quality: '89%',
-      qualityDot: false,
-      avgCpi: '$2.80'
-    },
-    {
-      name: 'Provider C',
-      code: 'PVDR_C',
-      status: 'Pending',
-      statusIcon: 'clock',
-      activeCampaigns: 0,
-      totalCompletes: '0',
-      quality: '0%',
-      qualityDot: false,
-      avgCpi: '$0.00'
-    },
-    {
-      name: 'Provider D',
-      code: 'PVDR_D',
-      status: 'Active',
-      statusIcon: 'circle-check-big',
-      activeCampaigns: 5,
-      totalCompletes: '6,780',
-      quality: '91%',
-      qualityDot: true,
-      avgCpi: '$3.10'
-    },
-    {
-      name: 'Provider E',
-      code: 'PVDR_E',
-      status: 'Inactive',
-      statusIcon: 'circle-x',
-      activeCampaigns: 0,
-      totalCompletes: '4,560',
-      quality: '85%',
-      qualityDot: false,
-      avgCpi: '$2.90'
-    }
+export class Providers implements OnInit {
+ 
+  _api = inject(ApiService);
+  showWizard = false;
+  providers: any[] = [
+    { name: 'Lucid',         panelId: 'LUC1', region: 'Global',         status: 'active' },
+    { name: 'Cint',          panelId: 'CNT1', region: 'Global',         status: 'active' },
+    { name: 'Dynata',        panelId: 'DYN1', region: 'North America',  status: 'active' },
+    { name: 'PureSpectrum',  panelId: 'PS01', region: 'Global',         status: 'degraded' },
+    { name: 'Toluna',        panelId: 'TOL1', region: 'Europe',         status: 'inactive' },
   ];
 
-  actionIcons = ['square-pen', 'EllipsisVertical'] as const;
-filteredRows: any
-  constructor(private login: Login) {
-    this.filteredRows = this.providers
+  statusLabel(status: any): any {
+    switch (status) {
+      case 'active': return 'Active';
+      case 'inactive': return 'Inactive';
+      case 'degraded': return 'Degraded';
+    }
   }
 
-filterByStatus(status: any) {
-  status= status.value
-  if (status === 'All Status') {
-    this.filteredRows = this.providers;
-    return;
+  statusClass(status: any): any {
+    switch (status) {
+      case 'active':
+        return 'inline-block px-3 py-1 text-sm bg-neutral-700 text-white';
+      case 'inactive':
+        return 'inline-block px-3 py-1 text-sm bg-neutral-300 text-neutral-700';
+      case 'degraded':
+        return 'inline-block px-3 py-1 text-sm bg-neutral-700 text-white';
+    }
   }
 
-  this.filteredRows = this.providers.filter(p => p.status === status);
-}
-
-  getStatusBadgeClass(status: ProviderRow['status']): string {
-    if (status === 'Active') return 'badge badge--green';
-    if (status === 'Pending') return 'badge badge--yellow';
-    return 'badge badge--gray';
+  apiIcon(status: any): any {
+    switch (status) {
+      case 'active':   return 'circle-check-big';
+      case 'degraded': return 'circle-x';
+      case 'inactive': return ''; // plain dot
+    }
   }
 
-  getStatusIconClass(status: ProviderRow['status']): string {
-    if (status === 'Active') return 'icon-status icon-status--green';
-    if (status === 'Pending') return 'icon-status icon-status--yellow';
-    return 'icon-status icon-status--gray';
+  apiText(status: any): any {
+    switch (status) {
+      case 'active':   return 'Healthy';
+      case 'degraded': return 'Degraded';
+      case 'inactive': return 'Unknown';
+    }
+  }
+  steps = [
+  { step: 1, label: 'Basic Info', active: true },
+  { step: 2, label: 'API Credentials', active: false },
+  { step: 3, label: 'Parameters', active: false },
+  { step: 4, label: 'Redirects', active: false },
+  { step: 5, label: 'Test', active: false },
+];
+
+regions = ['Global', 'North America', 'Europe', 'APAC'];
+region:any = '';
+selectedRegion = '';
+currentStep = 1;
+
+ ngOnInit(): void {
+   this.getRegions(); 
   }
 
-  searchFilter(event: any) {
- //console.log(this.searchFilterBykey);
-  this.filteredRows = this.login.filterBySearch(this.providers, this.searchFilterBykey);
+addPanel() {
+  this.showWizard = true;
+}
+
+onFinish() {
+  if(this.currentStep == 5){
+    console.log("this.currentStep == 5");
+ 
+  }
+  // final submit or switch to table, etc.
+  this.showWizard = false;
+  this.currentStep = 1;
+
+
+}
+getRegions() {
+  this._api.get('regions').subscribe((res: any) => {
+    this.region = res.data;
+    console.log("resoin",this.region);
+    
+  })
+}
+
 }
 
 
 
-}
-
-
-
-interface ProviderRow {
-  name: string;
-  code: string;
-  status: 'Active' | 'Pending' | 'Inactive';
-  statusIcon: string;
-  activeCampaigns: number;
-  totalCompletes: string;
-  quality: string;
-  qualityDot: boolean;
-  avgCpi: string;
-}

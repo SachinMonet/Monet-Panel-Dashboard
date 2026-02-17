@@ -164,7 +164,7 @@ export class CreateCampaigns implements OnInit {
 
 
   addPanel() {
-    //this.isAddPanelOpen = true;
+    this.isAddPanelOpen = true;
     console.log("this.isAddPanelOpen")
   }
 
