@@ -1,35 +1,29 @@
 <div class="panel-page">
   <div class="panel-container">
-    <!-- Header -->
+
     <header class="panel-header">
       <div class="panel-header__inner">
-        <button class="panel-header__back-btn" type="button" routerLink="/dashboard">
+        <button class="panel-header__back-btn" routerLink="/dashboard">
           <lucide-icon name="arrow-left" class="icon-20"></lucide-icon>
         </button>
-
-        <div class="panel-header__logo">
-          <span>PM</span>
-        </div>
-
-        <h1 class="panel-header__title">
-          Panel Provider Management
-        </h1>
+        <div class="panel-header__logo"><span>PM</span></div>
+        <h1 class="panel-header__title">Panel Provider Management</h1>
       </div>
     </header>
 
-    <!-- Main -->
     <main class="panel-main">
+
+      @if (!showWizard()) {
       <div class="panel-main__content">
-        <!-- Top right button -->
-        @if(!showWizard) {<div class="panel-toolbar">
+
+        <div class="panel-toolbar">
           <button class="btn-primary" type="button" (click)="addPanel()">
-            <lucide-icon name="plus" class="icon-16"></lucide-icon>
+            <lucide-icon name="plus"></lucide-icon>
             Add New Panel Provider
           </button>
-        </div>}
+        </div>
 
-        <!-- Table -->
-      @if(!showWizard) { <div class="panel-table-wrapper">
+        <div class="panel-table-wrapper">
           <table class="panel-table">
             <thead>
               <tr>
@@ -41,307 +35,250 @@
                 <th>Actions</th>
               </tr>
             </thead>
-
             <tbody>
-              @for (provider of providers; track provider.panelId; let i = $index) {
-                <tr [class.row-alt]="i % 2 === 1">
-                  <td class="td-name">
-                    {{ provider.name }}
-                  </td>
+            <tbody>
+              @for (p of providers(); track p.id; let i = $index) {
+              <tr [class.row-alt]="i % 2 === 1">
+                <td class="td-name">
+                  {{ p.provider_name }}
+                </td>
 
-                  <td>
-                    {{ provider.panelId }}
-                  </td>
+                <td>
+                  {{ p.panel_id || '_' }}
+                </td>
 
-                  <td>
-                    {{ provider.region }}
-                  </td>
+                <td>
+                  {{ p.region }}
+                </td>
 
-                  <td>
-                    <span [class]="statusClass(provider.status)">
-                      {{ statusLabel(provider.status) }}
+                <td>
+                  <span [class]="statusClass(p.status)">
+                    {{ p.status }}
+                  </span>
+                </td>
+
+                <td>
+                  <div class="api-health">
+                    <lucide-icon [name]="p.api_health === 'Healthy' ? 'circle-check-big' : 'circle-x'"
+                      class="api-health__icon" [class.text-green-600]="p.api_health === 'Healthy'"
+                      [class.text-red-600]="p.api_health !== 'Healthy'"></lucide-icon>
+
+                    <span>
+                      {{ p.api_health }}
                     </span>
-                  </td>
+                  </div>
+                </td>
 
-                  <td>
-                    <div class="api-health">
-                      @if (apiIcon(provider.status)) {
-                        <lucide-icon
-                          [name]="apiIcon(provider.status)"
-                          class="api-health__icon"
-                          [ngClass]="{
-                            'api-health__icon--ok': provider.status === 'active',
-                            'api-health__icon--bad': provider.status === 'degraded'
-                          }"
-                        ></lucide-icon>
-                      } @else {
-                        <div class="api-health__dot"></div>
-                      }
+                <td class="py-3 px-4">
+                  <div class="flex gap-2">
+                    <button type="button"
+                      class="inline-flex items-center justify-center whitespace-nowrap text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 border bg-background text-foreground hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3 border-neutral-400">
+                      View
+                    </button>
 
-                      <span>{{ apiText(provider.status) }}</span>
-                    </div>
-                  </td>
-
-                  <td>
-                    <div class="panel-actions">
-                      <button type="button" class="btn-ghost">
-                        View
-                      </button>
-
-                      <button type="button" class="btn-ghost">
-                        <lucide-icon
-                          name="square-pen"
-                          class="icon-16"
-                        ></lucide-icon>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
+                    <button type="button" (click)="editPanel(p.id)"
+                      class="inline-flex items-center justify-center whitespace-nowrap text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 border bg-background text-foreground hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3 border-neutral-400">
+                      <lucide-icon name="square-pen" class="w-4 h-4"></lucide-icon>
+                    </button>
+                     <button type="button"  (click)="openDeleteDialog(p.id)"
+                      class="inline-flex items-center justify-center whitespace-nowrap text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 border bg-background text-foreground hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3 border-neutral-400">
+                         <lucide-icon name="trash-2" class="icon-tiny"></lucide-icon>
+                    </button>
+                   
+                  </div>
+                </td>
+              </tr>
               }
             </tbody>
           </table>
-        </div>}
+        </div>
       </div>
-@if (showWizard) {
-  <main class="panel-wizard">
-    <div class="panel-wizard__container">
+      }
 
-      <!-- Steps bar -->
-      <div class="wizard-steps">
-        @for (item of steps; track item.step; let last = $last) {
-          <div class="wizard-steps__item">
-            <div
-              class="wizard-steps__circle"
-              [class.wizard-steps__circle--active]="currentStep === item.step"
-              [class.wizard-steps__circle--completed]="currentStep > item.step"
-            >
-              {{ item.step }}
+      @if (showWizard()) {
+      <div class="panel-wizard">
+        <div class="panel-wizard__container">
+
+          <div class="wizard-steps">
+            @for (item of steps; track item.step; let last = $last) {
+            <div class="wizard-steps__item">
+              <div class="wizard-steps__circle" [class.wizard-steps__circle--active]="currentStep() === item.step"
+                [class.wizard-steps__circle--completed]="currentStep() > item.step">
+                {{ item.step }}
+              </div>
+              <div class="wizard-steps__label">{{ item.label }}</div>
             </div>
-            <div class="wizard-steps__label">
-              {{ item.label }}
-            </div>
+            @if (!last) { <div class="wizard-steps__line"></div> }
+            }
           </div>
 
-          @if (!last) {
-            <div class="wizard-steps__line"></div>
-          }
-        }
-      </div>
+          <div class="wizard-card">
+            <h2 class="wizard-card__title">{{ currentStepTitle() }}</h2>
 
-      <!-- Card -->
-      <div class="wizard-card">
-        <!-- Step header -->
-        <h2 class="wizard-card__title">
-          @if (currentStep === 1) { Basic Information }
-          @else if (currentStep === 2) { API Credentials }
-          @else if (currentStep === 3) { Inbound Parameters }
-          @else if (currentStep === 4) { Redirect URLs}
-          @else { Test Connection }
-        </h2>
+            <form [formGroup]="providerForm" class="wizard-card__fields">
+              @switch (currentStep()) {
 
-        <!-- Step 1 body -->
-        @if (currentStep === 1) {
-          <div class="wizard-card__fields">
-            <div class="field">
-              <label for="provider-name" class="field__label">Provider Name</label>
-              <input
-                id="provider-name"
-                type="text"
-                class="field__input"
-                placeholder="e.g. Lucid"
-              />
-            </div>
-
-            <div class="field">
-              <label for="panel-id" class="field__label">Panel ID</label>
-              <input
-                id="panel-id"
-                type="text"
-                class="field__input"
-                placeholder="e.g. LUC1"
-              />
-            </div>
-
-            <div class="field">
-              <label for="region" class="field__label">Region</label>
-              <select
-                id="region"
-                class="field__input"
-                [(ngModel)]="selectedRegion"
-              >
-                <option value="" disabled>Select region</option>
-                @for (r of region; track r) {
-                  <option [value]="r.id">{{ r.region_name}}</option>
-                }
-              </select>
-            </div>
-          </div>
-        }
-
-        <!-- Step 2 body -->
-        @if (currentStep === 2) {
-          <div class="wizard-card__fields">
-             <div class="field">
-              <label class="field__label">API Endpoint</label>
-              <input
-                type="text"
-                class="field__input"
-                placeholder="https://api.example.com/v1"
-              />
-            </div>
-            <div class="field">
-              <label class="field__label">API Key</label>
-              <input
-                type="text"
-                class="field__input"
-                placeholder="Enter API key"
-              />
-            </div>
-
-            <div class="field">
-              <label class="field__label">API Secret</label>
-              <input
-                type="password"
-                class="field__input"
-                placeholder="Enter API secret"
-              />
-            </div>
-          </div>
-        }
-
-        <!-- Step 3 body -->
-        @if (currentStep === 3) {
-          <div class="wizard-card__fields">
-            <div class="field">
-              <label class="field__label">Panel ID Parameter Name</label>
-              <input
-                type="text"
-                class="field__input"
-                placeholder="pid"
-              />
-            </div>
-
-            <div class="field">
-              <label class="field__label">Session ID Parameter Name</label>
-              <input
-                type="text"
-                class="field__input"
-                placeholder="sid"
-              />
-            </div>
+              @case (1) {
+              <div formGroupName="basic" class="step-group">
                 <div class="field">
-              <label class="field__label">Custom Parameters (comma separated)</label>
-              <input
-                type="text"
-                class="field__input"
-                placeholder="param1,param2,param3"
-              />
+                  <label class="field__label">Provider Name</label>
+                  <input formControlName="name" type="text" class="field__input" placeholder="e.g. Lucid" />
+                </div>
+                <div class="field">
+                  <label class="field__label">Panel ID</label>
+                  <input formControlName="panelId" type="text" class="field__input" placeholder="e.g. LUC1" />
+                </div>
+                <div class="field">
+                  <label class="field__label">Region</label>
+                  <select formControlName="region" class="field__input">
+                    <option value="" disabled selected class="text-neutral-400">Select region</option>
+
+                    @for (r of regions(); track r.id) {
+                    <option [value]="r.id">{{ r.region_name }}</option>
+                    }
+                  </select>
+                </div>
+              </div>
+              }
+
+              <!-- @case (2) {
+                    <div formGroupName="credentials" class="step-group">
+                      <div class="field">
+                        <label class="field__label">API Endpoint</label>
+                        <input formControlName="endpoint" type="text" class="field__input" placeholder="https://api..." />
+                      </div>
+                      <div class="field">
+                        <label class="field__label">API Key</label>
+                        <input formControlName="key" type="text" class="field__input" />
+                      </div>
+                      <div class="field">
+                        <label class="field__label">API Secret</label>
+                        <input formControlName="secret" type="password" class="field__input" />
+                      </div>
+                    </div>
+                  }
+
+                  @case (3) {
+                    <div formGroupName="params" class="step-group">
+                      <div class="field">
+                        <label class="field__label">Panel ID Parameter</label>
+                        <input formControlName="panelIdParam" type="text" class="field__input" placeholder="pid" />
+                      </div>
+                      <div class="field">
+                        <label class="field__label">Session ID Parameter</label>
+                        <input formControlName="sessionIdParam" type="text" class="field__input" placeholder="sid" />
+                      </div>
+                      <div class="field">
+                        <label class="field__label">Custom Parameters</label>
+                        <input formControlName="customParams" type="text" class="field__input" placeholder="a,b,c" />
+                      </div>
+                    </div>
+                  } -->
+
+              @case (2) {
+              <div formGroupName="redirects" class="step-group">
+                <div class="field">
+                  <label class="field__label">Success URL</label>
+                  <input formControlName="successUrl" type="text" class="field__input"
+                    placeholder="https://panel.example.com/success?pid=[PID]&sid=[SID]" />
+                </div>
+                <div class="field">
+                  <label class="field__label">Termination URL</label>
+                  <input formControlName="terminateUrl" type="text" class="field__input"
+                    placeholder="https://panel.example.com/terminate?pid=[PID]&sid=[SID]" />
+                </div>
+                <div class="field">
+                  <label class="field__label">Overquota URL</label>
+                  <input formControlName="overquotaUrl" type="text" class="field__input"
+                    placeholder="https://panel.example.com/overquota?pid=[PID]&sid=[SID]" />
+                </div>
+                <div class="field">
+                  <label class="field__label">Quality Fail URL</label>
+                  <input formControlName="qualityFailUrl" type="text" class="field__input"
+                    placeholder="https://panel.example.com/quality-fail?pid=[PID]&sid=[SID]" />
+                </div>
+              </div>
+              }
+
+              @case (3) {
+              <div class="test-card">
+                <div class="test-card__info">
+                  <div class="test-row">
+                    <span class="test-row__label">Provider Name:</span>
+                    <span class="test-row__value">{{ providerForm.get('basic.name')?.value || 'Not set' }}</span>
+                  </div>
+                  <div class="test-row">
+                    <span class="test-row__label">Region:</span>
+                    <span class="test-row__value">{{ providerForm.get('basic.region')?.value || 'Not set'
+                      }}</span>
+                  </div>
+                  <div class="test-row">
+                    <span class="test-row__label">SuccessUrl:</span>
+                    <span class="test-row__value">{{ providerForm.get('redirects.successUrl')?.value || 'Not set'
+                      }}</span>
+                  </div>
+                </div>
+                <div class="test-card__cta bg-neutral-100 border border-neutral-300 p-6 text-center rounded-md">
+                  <div class="text-neutral-600 mb-4">
+                    Test connection to verify credentials
+                  </div>
+
+                  <button type="button" class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all 
+                 disabled:pointer-events-none disabled:opacity-50 outline-none 
+                 focus-visible:ring-2 focus-visible:ring-ring/50 
+                 border border-neutral-400 bg-background text-neutral-900 
+                 hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2">
+                    Run Connection Test
+                  </button>
+                </div>
+              </div>
+              }
+              }
+            </form>
+            <div class="wizard-card__footer">
+              @if(currentStep()!=1) {<button type="button" class="btn-ghost" [disabled]="currentStep() === 1"
+                (click)="prevStep()">
+                Back
+              </button>}
+              <button type="button" class="btn-primary" (click)="currentStep() < 3 ? nextStep() : onFinish()">
+                {{ currentStep() < 3 ? 'Continue' : 'Save Provider' }} </button>
             </div>
+
           </div>
-        }
-
-        <!-- Step 4 body -->
-        @if (currentStep === 4) {
-          <div class="wizard-card__fields">
-            <div class="field">
-              <label class="field__label">Success URL</label>
-              <input
-                type="text"
-                class="field__input"
-                placeholder="https://panel.example.com/success?pid=[PID]&sid=[SID]"
-              />
-            </div>
-
-            <div class="field">
-              <label class="field__label">Termination URL</label>
-              <input
-                type="text"
-                class="field__input"
-                placeholder="https://panel.example.com/terminate?pid=[PID]&sid=[SID]"
-              />
-            </div>
-             <div class="field">
-              <label class="field__label">Overquota URL</label>
-              <input
-                type="text"
-                class="field__input"
-                placeholder="https://panel.example.com/overquota?pid=[PID]&sid=[SID]"
-              />
-            </div>
-             <div class="field">
-              <label class="field__label">Quality Fail URL</label>
-              <input
-                type="text"
-                class="field__input"
-                placeholder="https://panel.example.com/qualityfail?pid=[PID]&sid=[SID]"
-              />
-            </div>
-          </div>
-        }
-
-   
-          @if (currentStep === 5) {
-  <div class="wizard-card__fields">
-    <!-- <h2 class="wizard-card__title">Test Connection</h2> -->
-
-    <div class="test-card">
-      <div class="test-card__info">
-        <div class="test-row">
-          <span class="test-row__label">Provider Name:</span>
-          <span class="test-row__value">Not set</span>
-        </div>
-
-        <div class="test-row">
-          <span class="test-row__label">Region:</span>
-          <span class="test-row__value">global</span>
-        </div>
-
-        <div class="test-row">
-          <span class="test-row__label">API Endpoint:</span>
-          <span class="test-row__value">Not set</span>
         </div>
       </div>
-
-      <div class="test-card__cta">
-        <div class="test-card__text">
-          Test connection to verify credentials
-        </div>
-
-        <button type="button" class="btn-secondary">
-          Run Connection Test
-        </button>
-      </div>
-
- 
-    </div>
-  </div>
-}
-
-
-        <!-- Footer buttons -->
-        <div class="wizard-card__footer">
-          <button
-            type="button"
-            class="btn-ghost"
-            [disabled]="currentStep === 1"
-            (click)="currentStep = currentStep - 1"
-          >
-            Back
-          </button>
-
-          <button
-            type="button"
-            class="btn-primary"
-            (click)="currentStep < 5 ? currentStep = currentStep + 1 : onFinish()"
-          >
-            {{ currentStep < 5 ? 'Continue' : 'Save Provider' }}
-          </button>
-        </div>
-      </div>
-    </div>
-  </main>
-}
+      }
 
     </main>
   </div>
 </div>
+
+@if (confirmDeleteOpen) {
+  <div class="modal-backdrop">
+    <div class="modal">
+      <h3 class="modal__title">Delete provider</h3>
+      <p class="modal__text">
+        Are you sure you want to remove this provider? This action cannot be undone.
+      </p>
+
+      <div class="modal__actions">
+        <button
+          type="button"
+          class="btn-ghost"
+          (click)="closeDeleteDialog()"
+        >
+          Cancel
+        </button>
+
+        <button
+          type="button"
+          class="btn-danger"
+          (click)="confirmDelete()"
+        >
+          Delete
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
