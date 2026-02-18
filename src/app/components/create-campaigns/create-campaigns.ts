@@ -6,11 +6,12 @@ import { FormArray, FormBuilder, FormControl, FormGroup, FormsModule, ReactiveFo
 import { Router, RouterLink } from "@angular/router";
 import { ApiService } from '../../core/services/api';
 import { AddPanel } from '../add-panel/add-panel';
+import { ConfirmDialogComponent } from '../loader';
 
 @Component({
   selector: 'app-create-campaigns',
   standalone: true,
-  imports: [CommonModule, LucideModule, LucideAngularModule, FormsModule, ReactiveFormsModule, RouterLink, AddPanel],
+  imports: [CommonModule, LucideModule, LucideAngularModule, FormsModule, ReactiveFormsModule, RouterLink, AddPanel, ConfirmDialogComponent],
   templateUrl: './create-campaigns.html',
   styleUrl: './create-campaigns.scss',
 })
@@ -24,6 +25,8 @@ export class CreateCampaigns implements OnInit {
   form!: FormGroup;
   isLoading: any = signal(false);
   formChanged: any = signal(false);
+  confirmDeleteOpen = false;
+  itemToDeleteId: number | null = null;
 
   steps: any[] = [
     {
@@ -67,12 +70,8 @@ export class CreateCampaigns implements OnInit {
 
   ngOnInit() {
 
-    console.log(this.currentStep);
     this.createForm();
-    console.log(this.form);
-
     this.isLoading.set(true);
-
     this._api.get('languages').subscribe({
       next: (res: any) => { this.languages = res.data; this.languagesLoaded = true; this.checkAllLoaded(); },
       error: () => { this.languagesLoaded = true; this.checkAllLoaded(); },
@@ -92,15 +91,12 @@ export class CreateCampaigns implements OnInit {
       this.getReviewData();
     }
     this.form.get('Basics')?.valueChanges.subscribe((val: any) => {
-      console.log({ currentStepData: this.currentStepData });
-      console.log("val", val);
       this.formChanged.set(true);
     })
   }
 
   getData() {
     this._api.get(`survey/campaigns/basic/${this.campaignId}`).subscribe((res: any) => {
-      console.log(res);
       if (res && !res.error) {
         this.form.get(this.steps[0].stepName)?.patchValue({
           targetCompletes: res.data.total_completes,
@@ -119,18 +115,15 @@ export class CreateCampaigns implements OnInit {
   getReviewData() {
     this.isLoading.set(true);
     this._api.get(`campaigns/${this.campaignId}/review`).subscribe((res: any) => {
-      console.log(res);
       if (res && !res.error) {
         this.isLoading.set(false);
         this.reviewData.set(res);
-        console.log("reviwe ==>", this.reviewData);
         this.formChanged.set(false);
       }
     });
   }
 
   private checkAllLoaded() {
-    console.log(this.languagesLoaded, this.countriesLoaded);
     this.isLoading.set(!(this.languagesLoaded && this.countriesLoaded));
   }
 
@@ -165,7 +158,6 @@ export class CreateCampaigns implements OnInit {
 
   addPanel() {
     this.isAddPanelOpen = true;
-    console.log("this.isAddPanelOpen")
   }
 
   closeAddPanel() {
@@ -198,7 +190,8 @@ export class CreateCampaigns implements OnInit {
 
 
   removePanel(index: number) {
-    this.panels.removeAt(index);
+    this.openDeleteDialog(index);
+    //this.panels.removeAt(index);
   }
 
 
@@ -230,7 +223,6 @@ export class CreateCampaigns implements OnInit {
   setAllocationMode(mode: 'manual' | 'auto') {
 
     this.allocationMode = mode;
-    console.log("this.allocationMode", this.allocationMode);
     const panelControls = this.panels.controls;
 
     if (mode === 'manual') {
@@ -283,7 +275,6 @@ export class CreateCampaigns implements OnInit {
     }
     localStorage.setItem('currentStep', JSON.stringify(this.currentStep));
     if (number === 1) {
-      console.log("form==>", this.form.value[this.steps[0].stepName]);
       let param = {
         campaignName: this.form.value[this.steps[0].stepName].campaignName,
         country_id: this.form.value[this.steps[0].stepName].country,
@@ -292,20 +283,16 @@ export class CreateCampaigns implements OnInit {
         ir: this.form.value[this.steps[0].stepName].ir,
         total_completes: this.form.value[this.steps[0].stepName].targetCompletes,
       }
-      console.log(
-        "param==>", param);
+
       if (this.campaignId) {
         param['id'] = this.campaignId;
       }
-      console.log("form changes =>>", this.formChanged());
       localStorage.setItem('basicData', JSON.stringify(this.form.value[this.steps[0].stepName]));
       this._api.post('survey/campaigns', param).subscribe((res: any) => {
-        console.log(res);
         this.campaignId = res.data.id;
         localStorage.setItem('campaignId', this.campaignId);
       })
     }
-    console.log(this.form);
 
   }
 
@@ -329,14 +316,37 @@ export class CreateCampaigns implements OnInit {
         localStorage.removeItem('campaignId');
 
       }
-      console.log(res);
     })
-    console.log("this.reviewData()", this.reviewData())
-    console.log(this.form.value);
     if (this.form.valid) {
-      console.log('Final Payload:', this.form.value);
     }
   }
+
+  openDeleteDialog(id: number) {
+    this.itemToDeleteId = id;
+    this.confirmDeleteOpen = true;
+  }
+
+  closeDeleteDialog() {
+    this.confirmDeleteOpen = false;
+    this.itemToDeleteId = null;
+  }
+
+  confirmDelete() {
+    if (this.itemToDeleteId == null) return;
+    this.panels.removeAt(this.itemToDeleteId);
+    this.closeDeleteDialog();
+    const id = this.itemToDeleteId;
+    // this._api.delete(`survey-panel-providers/${id}`).subscribe({
+    //   next: () => {
+    //     this.getPanelProvider(); 
+    //     this.closeDeleteDialog();
+    //   },
+    //   error: () => {
+    //     this.closeDeleteDialog();
+    //   },
+    // });
+  }
+
 }
 
 

@@ -6,14 +6,14 @@ import { Router, RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-dashboard',
-  imports: [LucideModule, LucideAngularModule, CommonModule,RouterLink],
+  imports: [LucideModule, LucideAngularModule, CommonModule, RouterLink],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.scss',
 })
 export class Dashboard {
- tabs: any[] = ['LIVE', 'UPCOMING', 'COMPLETED'];
+  tabs: any[] = ['LIVE', 'UPCOMING', 'COMPLETED'];
   activeTab: any = 'LIVE';
-   showProfileMenu = false;
+  showProfileMenu = false;
 
   headerUser = {
     initials: 'JD',
@@ -86,7 +86,7 @@ export class Dashboard {
       isAlert: false,
       actions: this.alertActions,
     },
-     {
+    {
       id: 6,
       name: 'Italy Food Preferences',
       progress: 100,
@@ -98,16 +98,16 @@ export class Dashboard {
       actions: this.alertActions,
     },
   ];
-  
+
 
   isLoading = false;
   error: string | null = null;
 
-  constructor(private router: Router) {}
+  constructor(private router: Router) { }
 
   ngOnInit() {
     setTimeout(() => {
-      
+
       this.fetchCampaignData();
     }, 1000);
     console.log(this.activeTab)
@@ -122,7 +122,7 @@ export class Dashboard {
     return this.campaigns.filter(campaign => campaign.isAlert);
   }
 
-    closeProfileMenu() {
+  closeProfileMenu() {
     this.showProfileMenu = false;
   }
 
@@ -134,7 +134,7 @@ export class Dashboard {
     this.closeProfileMenu();
   }
 
-    toggleProfileMenu() {
+  toggleProfileMenu() {
     this.showProfileMenu = !this.showProfileMenu;
   }
 
@@ -165,11 +165,11 @@ export class Dashboard {
       campaignId: campaign.id,
     });
 
-    
-    
-    
 
-    
+
+
+
+
 
     switch (action.id) {
       case 'boost':
@@ -198,17 +198,17 @@ export class Dashboard {
     }
   }
 
-  
-getVelocityColor(colorClass: string): string {
-  const colors: { [key: string]: string } = {
-    'neutral-500': '#737373',
-    'neutral-600': '#525252',
-    'neutral-700': '#404040',
-  };
-  return colors[colorClass] || '#737373';
-}
 
- hasAlertCampaigns(): boolean {
+  getVelocityColor(colorClass: string): string {
+    const colors: { [key: string]: string } = {
+      'neutral-500': '#737373',
+      'neutral-600': '#525252',
+      'neutral-700': '#404040',
+    };
+    return colors[colorClass] || '#737373';
+  }
+
+  hasAlertCampaigns(): boolean {
     return this.campaigns.some(c => c.status === this.activeTab && c.isAlert);
   }
 

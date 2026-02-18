@@ -34,6 +34,8 @@ export class Providers implements OnInit {
   currentStep = signal<number>(1);
   regions = signal<any[]>([]);
   isLoading = signal<boolean>(false);
+  Isupdating = signal<boolean>(false);
+  updatePanelId: number | null = null;
 
   providerForm = this._fb.group({
     basic: this._fb.group({
@@ -106,11 +108,17 @@ export class Providers implements OnInit {
   }
 
   onFinish() {
+    let url = 'panel-provider/save';
+    let method: 'post' | 'put' = 'post';
+    if (this.Isupdating()) {
+      url = `survey-panel-providers/update/${this.updatePanelId}`;
+      method = 'put';
+    }
     this.isLoading.set(true);
-    this._api.post('panel-provider/save', this.providerForm.value).subscribe({
+    this._api[method](url, this.providerForm.value).subscribe({
       next: (res) => {
         this.isLoading.set(false);
-        console.log('Provider created successfully:', res);
+        this.Isupdating.set(false);
         this.getPanelProvider();
         this.showWizard.set(false);
         this.currentStep.set(1);
@@ -120,7 +128,6 @@ export class Providers implements OnInit {
         console.error('Error creating provider:', err);
       }
     });
-    console.log('Submitting:', this.providerForm.value);
     this.showWizard.set(false);
     this.currentStep.set(1);
   }
@@ -129,7 +136,7 @@ export class Providers implements OnInit {
     this.isLoading.set(true);
     this._api.get('regions').subscribe((res: any) => {
       this.regions.set(res.data);
-     // this.isLoading.set(false);
+      // this.isLoading.set(false);
     });
   }
 
@@ -140,7 +147,6 @@ export class Providers implements OnInit {
       next: (res: any) => {
         this.providers.set(res.data);
         this.isLoading.set(false);
-        console.log('Provider details:', res);
       },
       error: (err) => {
         this.isLoading.set(false);
@@ -162,44 +168,66 @@ export class Providers implements OnInit {
 
 
   editPanel(id: number) {
-    console.log('Editing provider with ID:', id);
- 
-    
+    this.updatePanelId = id;
+    this.Isupdating.set(true);
+    this._api.get(`survey-panel-providers/individual/${id}`, {}).subscribe({
+      next: (res: any) => {
+        const provider = res;
+        this.providerForm.patchValue({
+          basic: {
+            name: provider.basic.name,
+            panelId: provider.basic.panelId,
+            region: provider.basic.region,
+          },
+          redirects: {
+            successUrl: provider.redirects.successUrl,
+            terminateUrl: provider.redirects.terminateUrl,
+            overquotaUrl: provider.redirects.overquotaUrl,
+            qualityFailUrl: provider.redirects.qualityFailUrl,
+          },
+        });
+        this.showWizard.set(true);
+        this.currentStep.set(1);
+      },
+      error: (err) => {
+        console.error('Error fetching provider details:', err);
+      }
+    });
+
+
   }
 
   confirmDeleteOpen = false;
-providerToDeleteId: number | null = null;
+  providerToDeleteId: number | null = null;
 
-openDeleteDialog(id: number) {
-  this.providerToDeleteId = id;
-  this.confirmDeleteOpen = true;
-}
+  openDeleteDialog(id: number) {
+    this.providerToDeleteId = id;
+    this.confirmDeleteOpen = true;
+  }
 
-closeDeleteDialog() {
-  this.confirmDeleteOpen = false;
-  this.providerToDeleteId = null;
-}
+  closeDeleteDialog() {
+    this.confirmDeleteOpen = false;
+    this.providerToDeleteId = null;
+  }
 
-confirmDelete() {
-  if (this.providerToDeleteId == null) return;
+  confirmDelete() {
+    if (this.providerToDeleteId == null) return;
 
-  const id = this.providerToDeleteId;
-  console.log('Attempting to delete provider with ID:', id);
-  this.isLoading.set(true);
+    const id = this.providerToDeleteId;
+    this.isLoading.set(true);
 
-  this._api.delete(`survey-panel-providers/${id}`).subscribe({
-    next: (res) => {
-      this.isLoading.set(false);
-      console.log('Provider deleted successfully:', res);
-      this.getPanelProvider();
-      this.closeDeleteDialog();
-    },
-    error: (err) => {
-      this.isLoading.set(false);
-      console.error('Error deleting provider:', err);
-      this.closeDeleteDialog();
-    }
-  });
-}
+    this._api.delete(`survey-panel-providers/${id}`).subscribe({
+      next: (res) => {
+        this.isLoading.set(false);
+        this.getPanelProvider();
+        this.closeDeleteDialog();
+      },
+      error: (err) => {
+        this.isLoading.set(false);
+        console.error('Error deleting provider:', err);
+        this.closeDeleteDialog();
+      }
+    });
+  }
 
 }

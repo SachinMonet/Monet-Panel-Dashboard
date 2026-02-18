@@ -349,6 +349,11 @@
 </div>
 }
 
+<app-confirm-dialog [open]="confirmDeleteOpen" title="Delete panel"
+    message="Are you sure you want to remove this panel? This action cannot be undone." confirmText="Delete"
+    cancelText="Cancel" (confirm)="confirmDelete()" (cancel)="closeDeleteDialog()"></app-confirm-dialog>
+
+
 @if(isAddPanelOpen){
 <app-add-panel (close)="closeAddPanel()" (savePanel)="handlePanelSaved($event)"></app-add-panel>
 }

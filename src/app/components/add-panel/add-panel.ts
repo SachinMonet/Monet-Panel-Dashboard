@@ -43,30 +43,24 @@ export class AddPanel {
   @Output() close = new EventEmitter<void>();
   @Input() panelId: number | null = null;
 
-  // Form Configuration
   form: FormGroup = this.fb.group({
     panelProvider: ['', Validators.required],
-    maxComplete: ['auto', [Validators.required, ]],
+    maxComplete: ['auto', [Validators.required,]],
     cpi: ['', [Validators.required, Validators.min(0.01)]],
     entryUrl: ['', [Validators.required]],
-    // ADD: Quotas FormArray
     quotas: this.fb.array([])
   });
 
-  // --- State Signals ---
   currentStep = signal<number>(1);
   openQuestionId = signal<number | null>(null);
 
-  // Data State
   private rawQuestions = signal<ApiQuestion[]>([]);
   panelProviders = signal<any[]>([]);
   isLoading = signal<boolean>(false);
 
-  // Selection State
   addedQuestionIds = signal<Set<number>>(new Set());
   selectedOptions = signal<{ [questionId: number]: Set<number> }>({});
 
-  // --- Computed Signals ---
   questions = computed<UIQuestion[]>(() =>
     this.rawQuestions().map(q => ({
       id: q.qs_id,
@@ -126,25 +120,15 @@ export class AddPanel {
     this.loadInitialData();
   }
 
-  // --- QUOTA FORMARRAY METHODS ---
-
-  /**
-   * Get quotas FormArray
-   */
   get quotas(): FormArray {
     return this.form.get('quotas') as FormArray;
   }
 
-  /**
-   * Get conditions FormArray for a specific quota
-   */
   getConditions(quotaIndex: number): FormArray {
     return this.quotas.at(quotaIndex).get('conditions') as FormArray;
   }
 
-  /**
-   * Create a new quota FormGroup
-   */
+
   createQuota(): FormGroup {
     return this.fb.group({
       name: ['', Validators.required],
@@ -153,9 +137,7 @@ export class AddPanel {
     });
   }
 
-  /**
-   * Create a new condition FormGroup
-   */
+
   createCondition(): FormGroup {
     return this.fb.group({
       question: ['', Validators.required],
@@ -163,39 +145,29 @@ export class AddPanel {
     });
   }
 
-  /**
-   * Add new quota
-   */
+
   addQuota(): void {
     this.quotas.push(this.createQuota());
   }
 
-  /**
-   * Remove quota
-   */
+
   removeQuota(index: number): void {
     this.quotas.removeAt(index);
   }
 
-  /**
-   * Add condition to a specific quota
-   */
+
   addCondition(quotaIndex: number): void {
     const conditions = this.getConditions(quotaIndex);
     conditions.push(this.createCondition());
   }
 
-  /**
-   * Remove condition from a specific quota
-   */
+
   removeCondition(quotaIndex: number, conditionIndex: number): void {
     const conditions = this.getConditions(quotaIndex);
     conditions.removeAt(conditionIndex);
   }
 
-  /**
-   * Get available questions for dropdown (from selected qualifications)
-   */
+
   getAvailableQuestionsForQuota() {
     return this.selectedSummary().map(item => ({
       value: item.id.toString(),
@@ -203,9 +175,7 @@ export class AddPanel {
     }));
   }
 
-  /**
-   * Get available options for a selected question in quota condition
-   */
+
   getOptionsForQuestion(questionId: string): string[] {
     const qId = parseInt(questionId);
     const question = this.rawQuestions().find(q => q.qs_id === qId);
@@ -219,9 +189,7 @@ export class AddPanel {
       .map(opt => opt.option_value);
   }
 
-  // --- END QUOTA METHODS ---
 
-  // --- Data Loading ---
 
   private loadInitialData(): void {
     this.isLoading.set(true);
@@ -229,22 +197,20 @@ export class AddPanel {
     this.apiService.get('survey/question-options').subscribe({
       next: (data: any) => {
         this.rawQuestions.set(data.data);
-        this.isLoading.set(false); // if this is the only call you care about
+        this.isLoading.set(false);
       },
       error: (err) => {
         console.error('Failed to load questions', err);
         this.isLoading.set(false);
       }
     });
-this.isLoading.set(true);
+    this.isLoading.set(true);
     this.apiService.get('panel-providers').subscribe({
-      
+
       next: (res: any) => {
         this.isLoading.set(false);
         this.panelProviders.set(res.data);
         this.form.patchValue({ panelProvider: this.panelProviders()[0].id });
-        // optional: if you want loader to wait for both calls,
-        // move isLoading.set(false) here and track both with a counter
       },
       error: (err) => {
         console.error('Failed to load providers', err);
@@ -254,7 +220,6 @@ this.isLoading.set(true);
   }
 
 
-  // --- Core Logic ---
   toggleAddQuestion(questionId: number, event?: Event): void {
     event?.stopPropagation();
 
@@ -322,7 +287,6 @@ this.isLoading.set(true);
     return this.selectedOptions()[qId]?.has(optId) ?? false;
   }
 
-  // --- Navigation & Submission ---
   onNext(): void {
     if (this.currentStep() === 1 && this.form.get('panelProvider')?.invalid) {
       this.form.markAllAsTouched();
@@ -344,106 +308,71 @@ this.isLoading.set(true);
     this.addedQuestionIds.set(new Set());
     this.currentStep.set(1);
     this.openQuestionId.set(null);
-    // Clear quotas
     while (this.quotas.length > 0) {
       this.quotas.removeAt(0);
     }
     this.close.emit();
   }
 
- onFinish(skip?: boolean ): void {
-  // 1. Validate quotas if on the final step
-  if (this.currentStep() === 3 && this.quotas.invalid) {
-    this.markFormGroupTouched(this.quotas);
-    return;
-  }
-
-  // 2. Generate the dynamic payload
-  //  const payload = {
-  //    panel: {
-  //      panel_provider_id: this.form.value.panelProvider,
-  //      target_completes: this.form.value.maxComplete,
-  //      cpi: this.form.value.cpi,
-  //      entry_url: this.form.value.entryUrl,
-  //    },
-  //    qualifications: this.selectedSummary().map(item => ({
-  //      qs_id: item.id,
-  //      option_ids: item.options.map(o => o.id)
-  //    })),
-  //    quotas: this.form.value.quotas.map((q: any) => ({
-  //      quota_name: q.name,
-  //      target: q.target,
-  //      conditions: q.conditions.map((cond: any) => ({
-  //        qs_id: cond.question ? Number(cond.question) : null,
-  //        opt_id: cond.answer ? Number(cond.answer) : null
-  //      }))
-  //    })),
-  //    skip: skip
-  //  };
-  // 1. Prepare the common panel data
-const panelData = {
-  panel_provider_id: this.form.value.panelProvider,
-  target_completes: this.form.value.maxComplete,
-  cpi: this.form.value.cpi,
-  entry_url: this.form.value.entryUrl,
-};
-
-let payload;
-
-if (skip) {
-  // 2. Simple payload if skip is true
-  payload = {
-    panel: panelData,
-    skip: true
-  };
-} else {
-  // 3. Full payload if skip is false
-  payload = {
-    panel: panelData,
-    qualifications: this.selectedSummary().map(item => ({
-      qs_id: item.id,
-      option_ids: item.options.map(o => o.id)
-    })),
-    quotas: this.form.value.quotas.map((q: any) => ({
-      quota_name: q.name,
-      target: q.target,
-      // Fixed: Now maps multiple conditions within one quota
-      conditions: q.conditions.map((cond: any) => ({
-        qs_id: cond.question ? Number(cond.question) : null,
-        opt_id: cond.answer ? Number(cond.answer) : null
-      }))
-    })),
-    skip: false
-  };
-}
-
-  // 3. Log and process
-  console.log('Dynamic Payload:', payload);
-  let id = localStorage.getItem('campaignId');    ////static make dynamic for multiple campaign
-  console.log("id",this.panelId,"pannel id ");
-  
-  this.apiService.post<any>('survey/campaigns/'+id+'/final-submit', payload).subscribe({
-    next: (res: any) => {
-      console.log('Response:', res);
-      this.onCancel();
-    },
-    error: (err) => {
-      console.error('Failed to add panel', err);
-      this.onCancel();
+  onFinish(skip?: boolean): void {
+    if (this.currentStep() === 3 && this.quotas.invalid) {
+      this.markFormGroupTouched(this.quotas);
+      return;
     }
-  })
 
-  // If you still need the full local submission object for other logic:
-  const submission = {
-    ...this.form.value,
-    qualifications: this.getFinalQualifications(),
-    timestamp: new Date().toISOString()
-  };
-  console.log('Submitting Meta:', submission);
+    const panelData = {
+      panel_provider_id: this.form.value.panelProvider,
+      target_completes: this.form.value.maxComplete,
+      cpi: this.form.value.cpi,
+      entry_url: this.form.value.entryUrl,
+    };
 
-  // Close/Reset
-  this.onCancel();
-}
+    let payload;
+
+    if (skip) {
+      payload = {
+        panel: panelData,
+        skip: true
+      };
+    } else {
+      payload = {
+        panel: panelData,
+        qualifications: this.selectedSummary().map(item => ({
+          qs_id: item.id,
+          option_ids: item.options.map(o => o.id)
+        })),
+        quotas: this.form.value.quotas.map((q: any) => ({
+          quota_name: q.name,
+          target: q.target,
+          conditions: q.conditions.map((cond: any) => ({
+            qs_id: cond.question ? Number(cond.question) : null,
+            opt_id: cond.answer ? Number(cond.answer) : null
+          }))
+        })),
+        skip: false
+      };
+    }
+
+    let id = localStorage.getItem('campaignId');
+
+    this.apiService.post<any>('survey/campaigns/' + id + '/final-submit', payload).subscribe({
+      next: (res: any) => {
+        this.onCancel();
+      },
+      error: (err) => {
+        console.error('Failed to add panel', err);
+        this.onCancel();
+      }
+    })
+
+    const submission = {
+      ...this.form.value,
+      qualifications: this.getFinalQualifications(),
+      timestamp: new Date().toISOString()
+    };
+
+    this.onCancel();
+  }
 
   private getFinalQualifications() {
     return this.selectedSummary().map(item => ({
@@ -454,9 +383,7 @@ if (skip) {
     }));
   }
 
-  /**
-   * Helper method to mark all fields as touched for validation
-   */
+
   private markFormGroupTouched(formGroup: FormGroup | FormArray): void {
     Object.keys(formGroup.controls).forEach(key => {
       const control = formGroup.get(key);
@@ -472,30 +399,19 @@ if (skip) {
     return item.options.map((o: any) => o.label).join(', ');
   }
 
-  // Inside AddPanel class
 
-  /**
-   * Helper to get the options available for a specific condition row.
-   * It looks up the questionId currently selected in that row's dropdown.
-   */
   getOptionsForCondition(quotaIndex: number, conditionIndex: number): UIOption[] {
     const conditionGroup = this.getConditions(quotaIndex).at(conditionIndex);
     const questionId = conditionGroup.get('question')?.value;
 
     if (!questionId) return [];
 
-    // Find the question in our selected summary to get its specific options
     const selectedQuestion = this.selectedSummary().find(
       (q) => q.id.toString() === questionId.toString()
     );
 
     return selectedQuestion ? selectedQuestion.options : [];
   }
-
-  /**
-   * Update the createCondition to initialize answer with empty string
-   */
-
 
 
 

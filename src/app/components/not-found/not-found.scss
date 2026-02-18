@@ -190,6 +190,7 @@
   from {
     transform: rotate(0deg);
   }
+
   to {
     transform: rotate(360deg);
   }
@@ -200,10 +201,12 @@
     transform: translate(-10%, -10%) scale(0.9);
     opacity: 0.8;
   }
+
   50% {
     transform: translate(10%, 10%) scale(1.05);
     opacity: 0.4;
   }
+
   100% {
     transform: translate(-10%, -10%) scale(0.9);
     opacity: 0.8;
@@ -214,9 +217,11 @@
   0% {
     transform: translate(0, 0);
   }
+
   50% {
     transform: translate(8px, -6px);
   }
+
   100% {
     transform: translate(0, 0);
   }
@@ -226,9 +231,11 @@
   0% {
     transform: translate(0, 0);
   }
+
   50% {
     transform: translate(-6px, 8px);
   }
+
   100% {
     transform: translate(0, 0);
   }
@@ -238,9 +245,11 @@
   0% {
     transform: translate(0, 0);
   }
+
   50% {
     transform: translate(4px, -4px);
   }
+
   100% {
     transform: translate(0, 0);
   }
@@ -250,9 +259,11 @@
   0% {
     transform: translateY(-50%) translateY(0);
   }
+
   50% {
     transform: translateY(-50%) translateY(-10px);
   }
+
   100% {
     transform: translateY(-50%) translateY(0);
   }

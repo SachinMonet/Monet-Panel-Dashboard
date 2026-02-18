@@ -6,14 +6,14 @@ import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-login',
-  imports: [CommonModule,ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './login.html',
   styleUrl: './login.scss',
 })
 export class Login {
- loading = false;
+  loading = false;
   error = '';
-form:FormGroup
+  form: FormGroup
 
 
   constructor(
@@ -21,15 +21,14 @@ form:FormGroup
     private auth: AuthService,
     private router: Router
   ) {
-      this.form = this.fb.group({
-    email: ['', [Validators.required, Validators.email]],
-    password: ['', [Validators.required]],
-  });
+    this.form = this.fb.group({
+      email: ['', [Validators.required, Validators.email]],
+      password: ['', [Validators.required]],
+    });
   }
 
   submit(): void {
     this.router.navigateByUrl('/dashboard');
-    console.log(this.form.value);
     this.error = '';
     if (this.form.invalid) {
       this.form.markAllAsTouched();

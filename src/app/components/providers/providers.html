@@ -1,11 +1,11 @@
 @if (isLoading()) {
 <div class="loader-wrapper">
-    <div class="loader-container">
-        <div class="loader-dot"></div>
-        <div class="loader-dot"></div>
-        <div class="loader-dot"></div>
-    </div>
-    <p class="loader-text">Loading...</p>
+  <div class="loader-container">
+    <div class="loader-dot"></div>
+    <div class="loader-dot"></div>
+    <div class="loader-dot"></div>
+  </div>
+  <p class="loader-text">Loading...</p>
 </div>
 } @else {
 <div class="panel-page">
@@ -81,20 +81,20 @@
 
                 <td class="py-3 px-4">
                   <div class="flex gap-2">
-                    <button type="button"
+                    <!-- <button type="button"
                       class="inline-flex items-center justify-center whitespace-nowrap text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 border bg-background text-foreground hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3 border-neutral-400">
                       View
-                    </button>
+                    </button> -->
 
                     <button type="button" (click)="editPanel(p.id)"
                       class="inline-flex items-center justify-center whitespace-nowrap text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 border bg-background text-foreground hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3 border-neutral-400">
                       <lucide-icon name="square-pen" class="w-4 h-4"></lucide-icon>
                     </button>
-                     <button type="button"  (click)="openDeleteDialog(p.id)"
+                    <button type="button" (click)="openDeleteDialog(p.id)"
                       class="inline-flex items-center justify-center whitespace-nowrap text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 border bg-background text-foreground hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3 border-neutral-400">
-                         <lucide-icon name="trash-2" class="icon-tiny"></lucide-icon>
+                      <lucide-icon name="trash-2" class="icon-tiny"></lucide-icon>
                     </button>
-                   
+
                   </div>
                 </td>
               </tr>
@@ -151,7 +151,7 @@
               </div>
               }
 
-              <!-- @case (2) {
+              <!-- @case (2) { 
                     <div formGroupName="credentials" class="step-group">
                       <div class="field">
                         <label class="field__label">API Endpoint</label>
@@ -264,31 +264,22 @@
 </div>}
 
 @if (confirmDeleteOpen) {
-  <div class="modal-backdrop">
-    <div class="modal">
-      <h3 class="modal__title">Delete provider</h3>
-      <p class="modal__text">
-        Are you sure you want to remove this provider? This action cannot be undone.
-      </p>
+<div class="modal-backdrop">
+  <div class="modal">
+    <h3 class="modal__title">Delete provider</h3>
+    <p class="modal__text">
+      Are you sure you want to remove this provider? This action cannot be undone.
+    </p>
 
-      <div class="modal__actions">
-        <button
-          type="button"
-          class="btn-ghost"
-          (click)="closeDeleteDialog()"
-        >
-          Cancel
-        </button>
+    <div class="modal__actions">
+      <button type="button" class="btn-ghost" (click)="closeDeleteDialog()">
+        Cancel
+      </button>
 
-        <button
-          type="button"
-          class="btn-danger"
-          (click)="confirmDelete()"
-        >
-          Delete
-        </button>
-      </div>
+      <button type="button" class="btn-danger" (click)="confirmDelete()">
+        Delete
+      </button>
     </div>
   </div>
+</div>
 }
-

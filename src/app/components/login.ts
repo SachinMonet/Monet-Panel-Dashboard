@@ -5,7 +5,7 @@ import { Injectable } from '@angular/core';
 })
 export class Login {
 
- filterBySearch<T extends object>(data: T[], search: string): T[] {
+  filterBySearch<T extends object>(data: T[], search: string): T[] {
     if (!search) {
       return data;
     }

@@ -180,9 +180,7 @@
       @case (3) {
       <section class="step-content" [formGroup]="form">
 
-        <!-- Quota Configuration Section -->
         <div class="space-y-4">
-          <!-- Header with Add Quota Button -->
           <div class="flex justify-between items-center">
             <label class="flex items-center gap-2 text-sm leading-none font-medium select-none text-neutral-900">
               Quota Configuration
@@ -199,12 +197,10 @@
             </button>
           </div>
 
-          <!-- Quotas List -->
           <div formArrayName="quotas" class="space-y-3">
             @for (quota of quotas.controls; track $index; let i = $index) {
             <div [formGroupName]="i" class="border border-neutral-300 p-4 rounded">
 
-              <!-- Quota Header -->
               <div class="flex justify-between items-start mb-3">
                 <div class="text-sm font-semibold text-neutral-900">
                   Quota {{ i + 1 }}
@@ -219,7 +215,6 @@
                 </button>
               </div>
 
-              <!-- Quota Name and Target -->
               <div class="grid grid-cols-2 gap-3 mb-3">
                 <div>
                   <label class="items-center gap-2 font-medium select-none text-neutral-900 text-xs mb-1 block">
@@ -239,7 +234,6 @@
                 </div>
               </div>
 
-              <!-- Conditions Section -->
               <div class="border-t border-neutral-300 pt-3">
                 <div class="flex justify-between items-center mb-2">
                   <label class="flex items-center gap-2 font-medium select-none text-neutral-900 text-xs">
@@ -257,7 +251,6 @@
                   </button>
                 </div>
 
-                <!-- Conditions List -->
                 <div formArrayName="conditions" class="space-y-2">
                   @for (condition of getConditions(i).controls; track $index; let j = $index) {
                   <div [formGroupName]="j" class="flex gap-2 items-start">
@@ -272,29 +265,21 @@
                         }
                       </select>
 
-                      <!-- <select formControlName="answer" [disabled]="!condition.get('question')?.value"
-                        class="flex w-full items-center justify-between gap-2 rounded-md border bg-input-background px-3 py-2 transition-all outline-none border-neutral-300 h-8 text-xs"
-                        [class.border-red-500]="condition.get('answer')?.invalid && condition.get('answer')?.touched">
+
+                      <select formControlName="answer"
+                        class="flex w-full items-center justify-between gap-2 rounded-md border px-3 py-2 transition-all outline-none border-neutral-300 h-8 text-xs"
+                        [class.border-red-500]="condition.get('answer')?.invalid && condition.get('answer')?.touched"
+                        [class.bg-gray-100]="!condition.get('question')?.value"
+                        [class.bg-input-background]="condition.get('question')?.value"
+                        [style.pointer-events]="!condition.get('question')?.value ? 'none' : 'auto'"
+                        [attr.tabindex]="!condition.get('question')?.value ? -1 : 0">
+
                         <option value="" disabled selected>Select answer</option>
+
                         @for (opt of getOptionsForCondition(i, j); track opt.id) {
                         <option [value]="opt.id">{{ opt.label }}</option>
                         }
-                      </select> -->
-                      <select 
-                      formControlName="answer"
-                      class="flex w-full items-center justify-between gap-2 rounded-md border px-3 py-2 transition-all outline-none border-neutral-300 h-8 text-xs"
-                      [class.border-red-500]="condition.get('answer')?.invalid && condition.get('answer')?.touched"
-                      [class.bg-gray-100]="!condition.get('question')?.value"
-                      [class.bg-input-background]="condition.get('question')?.value"
-                      [style.pointer-events]="!condition.get('question')?.value ? 'none' : 'auto'"
-                      [attr.tabindex]="!condition.get('question')?.value ? -1 : 0">
-                      
-                      <option value="" disabled selected>Select answer</option>
-                      
-                      @for (opt of getOptionsForCondition(i, j); track opt.id) {
-                        <option [value]="opt.id">{{ opt.label }}</option>
-                      }
-                    </select>
+                      </select>
 
                     </div>
 
@@ -313,7 +298,6 @@
             </div>
             }
 
-            <!-- Empty State Message -->
             @if (quotas.length === 0) {
             <div class="text-center py-8 text-neutral-500">
               <p>No quotas configured yet. Click "Add Quota" to get started.</p>

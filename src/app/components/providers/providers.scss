@@ -38,11 +38,13 @@ $border: 1px solid $neutral-300;
 .panel-page {
   min-height: 100vh;
   background-color: $neutral-100;
+
 }
 
 .panel-container {
   max-width: 1440px;
   margin: 0 auto;
+
 }
 
 .panel-header {
@@ -91,10 +93,13 @@ $border: 1px solid $neutral-300;
 .panel-main {
   padding: 1.5rem 2rem;
 
+
   &__content {
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
+
+
   }
 }
 
@@ -106,11 +111,15 @@ $border: 1px solid $neutral-300;
 .panel-table-wrapper {
   background-color: $white;
   border: $border;
+  overflow: scroll;
+  height: 80vh;
+
 }
 
 .panel-table {
   width: 100%;
   border-collapse: collapse;
+
 
   thead {
     background-color: $neutral-200;
