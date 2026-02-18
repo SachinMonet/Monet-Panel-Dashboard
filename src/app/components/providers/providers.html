@@ -1,3 +1,13 @@
+@if (isLoading()) {
+<div class="loader-wrapper">
+    <div class="loader-container">
+        <div class="loader-dot"></div>
+        <div class="loader-dot"></div>
+        <div class="loader-dot"></div>
+    </div>
+    <p class="loader-text">Loading...</p>
+</div>
+} @else {
 <div class="panel-page">
   <div class="panel-container">
 
@@ -251,7 +261,7 @@
 
     </main>
   </div>
-</div>
+</div>}
 
 @if (confirmDeleteOpen) {
   <div class="modal-backdrop">

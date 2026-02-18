@@ -33,6 +33,7 @@ export class Providers implements OnInit {
   showWizard = signal<boolean>(false);
   currentStep = signal<number>(1);
   regions = signal<any[]>([]);
+  isLoading = signal<boolean>(false);
 
   providerForm = this._fb.group({
     basic: this._fb.group({
@@ -105,14 +106,17 @@ export class Providers implements OnInit {
   }
 
   onFinish() {
+    this.isLoading.set(true);
     this._api.post('panel-provider/save', this.providerForm.value).subscribe({
       next: (res) => {
+        this.isLoading.set(false);
         console.log('Provider created successfully:', res);
         this.getPanelProvider();
         this.showWizard.set(false);
         this.currentStep.set(1);
       },
       error: (err) => {
+        this.isLoading.set(false);
         console.error('Error creating provider:', err);
       }
     });
@@ -122,19 +126,24 @@ export class Providers implements OnInit {
   }
 
   getRegions() {
+    this.isLoading.set(true);
     this._api.get('regions').subscribe((res: any) => {
       this.regions.set(res.data);
+     // this.isLoading.set(false);
     });
   }
 
 
   getPanelProvider() {
+    this.isLoading.set(true);
     this._api.get('panel-providers_all').subscribe({
       next: (res: any) => {
         this.providers.set(res.data);
+        this.isLoading.set(false);
         console.log('Provider details:', res);
       },
       error: (err) => {
+        this.isLoading.set(false);
         console.error('Error fetching provider details:', err);
       }
     });
@@ -176,14 +185,17 @@ confirmDelete() {
 
   const id = this.providerToDeleteId;
   console.log('Attempting to delete provider with ID:', id);
+  this.isLoading.set(true);
 
   this._api.delete(`survey-panel-providers/${id}`).subscribe({
     next: (res) => {
+      this.isLoading.set(false);
       console.log('Provider deleted successfully:', res);
       this.getPanelProvider();
       this.closeDeleteDialog();
     },
     error: (err) => {
+      this.isLoading.set(false);
       console.error('Error deleting provider:', err);
       this.closeDeleteDialog();
     }
