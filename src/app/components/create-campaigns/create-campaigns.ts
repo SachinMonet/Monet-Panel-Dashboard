@@ -206,8 +206,12 @@ export class CreateCampaigns implements OnInit {
 
 
 
-  removePanel(index: number) {
-    this.openDeleteDialog(index);
+  removePanel(index: any) {
+   let x =  this.tempPanelData[index].panel_provider_id
+   console.log('Remove Panel clicked for index:', index, 'with panel_provider_id:', x);
+    this.openDeleteDialog(x);
+
+
     //this.panels.removeAt(index);
   }
 
@@ -342,6 +346,11 @@ export class CreateCampaigns implements OnInit {
     if (this.form.valid) {
     }
   }
+  editPanel(index: number) {
+    console.log('Edit Panel clicked for index:', index);
+    let id = this.tempPanelData[index].panel_provider_id
+    console.log('Panel provider ID for editing:', id);
+  }
 
   openDeleteDialog(id: number) {
     this.itemToDeleteId = id;
@@ -350,23 +359,28 @@ export class CreateCampaigns implements OnInit {
 
   closeDeleteDialog() {
     this.confirmDeleteOpen = false;
-    this.itemToDeleteId = null;
+  
   }
 
   confirmDelete() {
     if (this.itemToDeleteId == null) return;
-    this.panels.removeAt(this.itemToDeleteId);
-    this.closeDeleteDialog();
-    const id = this.itemToDeleteId;
-    // this._api.delete(`survey-panel-providers/${id}`).subscribe({
-    //   next: () => {
-    //     this.getPanelProvider(); 
-    //     this.closeDeleteDialog();
-    //   },
-    //   error: () => {
-    //     this.closeDeleteDialog();
-    //   },
-    // });
+   // this.panels.removeAt(this.itemToDeleteId);
+    this.isLoading.set(true);
+    this._api.delete(`survey/campaigns/${this.campaignId}/panels/${this.itemToDeleteId}/final-delete`).subscribe({
+      next: () => {
+         const panelControls = this.panels; 
+          panelControls.clear();
+        
+        this.loadDataRows();
+        this.closeDeleteDialog();
+        this.itemToDeleteId = null;
+          this.isLoading.set(false);  
+      },
+      error: () => {
+        this.closeDeleteDialog();
+          this.isLoading.set(false);  
+      },
+    });
   }
 
 }
