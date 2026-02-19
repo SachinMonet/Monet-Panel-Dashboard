@@ -170,6 +170,7 @@ export class Providers implements OnInit {
   editPanel(id: number) {
     this.updatePanelId = id;
     this.Isupdating.set(true);
+    this.isLoading.set(true);
     this._api.get(`survey-panel-providers/individual/${id}`, {}).subscribe({
       next: (res: any) => {
         const provider = res;
@@ -188,8 +189,10 @@ export class Providers implements OnInit {
         });
         this.showWizard.set(true);
         this.currentStep.set(1);
+        this.isLoading.set(false);
       },
       error: (err) => {
+        this.isLoading.set(false);
         console.error('Error fetching provider details:', err);
       }
     });

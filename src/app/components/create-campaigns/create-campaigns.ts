@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, OnInit, Signal, signal } from '@angular/core';
+import { ChangeDetectorRef, Component, importProvidersFrom, OnInit, Signal, signal } from '@angular/core';
 import { LucideModule } from '../../lucide/lucide-module';
 import { LucideAngularModule } from 'lucide-angular';
 import { FormArray, FormBuilder, FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -7,13 +7,15 @@ import { Router, RouterLink } from "@angular/router";
 import { ApiService } from '../../core/services/api';
 import { AddPanel } from '../add-panel/add-panel';
 import { ConfirmDialogComponent } from '../loader';
+import { MatDialogModule, MatDialog } from '@angular/material/dialog';
+
 
 @Component({
   selector: 'app-create-campaigns',
   standalone: true,
-  imports: [CommonModule, LucideModule, LucideAngularModule, FormsModule, ReactiveFormsModule, RouterLink, AddPanel, ConfirmDialogComponent],
+  imports: [CommonModule, LucideModule, LucideAngularModule, FormsModule, ReactiveFormsModule, RouterLink, ConfirmDialogComponent, MatDialogModule],
   templateUrl: './create-campaigns.html',
-  styleUrl: './create-campaigns.scss',
+  styleUrl: './create-campaigns.scss'
 })
 
 
@@ -62,11 +64,12 @@ export class CreateCampaigns implements OnInit {
   campaignId: any;
   isAddPanelOpen = false;
   reviewData = signal<any>({});
+  tempPanelData:any
 
   private languagesLoaded = false;
   private countriesLoaded = false;
 
-  constructor(private fb: FormBuilder, private _api: ApiService, private cdr: ChangeDetectorRef, private router: Router) { }
+  constructor(private fb: FormBuilder, private _api: ApiService, private cdr: ChangeDetectorRef, private router: Router, private dialog: MatDialog) { }
 
   ngOnInit() {
 
@@ -157,7 +160,21 @@ export class CreateCampaigns implements OnInit {
 
 
   addPanel() {
-    this.isAddPanelOpen = true;
+    // this.isAddPanelOpen = true;
+    console.log('Add Panel clicked');
+
+    const dialogRef = this.dialog.open(AddPanel, {
+      width: '480px',
+      disableClose: true,
+      data: { campaignId: this.campaignId, allocationMode: this.allocationMode },
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (!result.save) {
+        this.loadDataRows();
+      }
+ 
+    });
   }
 
   closeAddPanel() {
@@ -205,6 +222,7 @@ export class CreateCampaigns implements OnInit {
       this.isLoading.set(false);
 
       const panelList = res?.data || [];
+      this.tempPanelData = res.data;
       panelList.forEach((row: any) => {
         const panelGroup = this.fb.group({
           providerName: [row.provider?.name, Validators.required],
@@ -226,8 +244,12 @@ export class CreateCampaigns implements OnInit {
     const panelControls = this.panels.controls;
 
     if (mode === 'manual') {
-      panelControls.forEach(group => group.get('target')?.enable());
-      panelControls.forEach(group => group.get('target')?.patchValue(0));
+       this.tempPanelData.forEach((data: any, index: number) => {
+        const panelGroup = panelControls[index] as FormGroup;
+       // panelGroup.get('target')?.enable();
+        panelGroup.get('target')?.patchValue(data.max_completes);
+      });
+     
     } else {
       panelControls.forEach(group => group.get('target')?.disable());
       panelControls.forEach(group => group.get('target')?.patchValue('Auto'));

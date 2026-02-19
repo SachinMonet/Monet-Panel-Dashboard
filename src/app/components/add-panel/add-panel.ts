@@ -1,8 +1,9 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, EventEmitter, inject, Input, Output, signal } from '@angular/core';
+import { Component, computed, EventEmitter, Inject, inject, Input, Output, signal } from '@angular/core';
 import { FormArray, FormBuilder, FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ApiService } from '../../core/services/api';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 export interface ApiOption {
   opt_id: number;
   option_value: string;
@@ -28,13 +29,14 @@ export interface UIOption {
 
 @Component({
   selector: 'app-add-panel',
-  imports: [CommonModule, ReactiveFormsModule, FormsModule,],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, MatDialogModule],
   templateUrl: './add-panel.html',
   styleUrl: './add-panel.scss',
 })
 export class AddPanel {
   private fb = inject(FormBuilder);
   private apiService = inject(ApiService);
+
   searchControl = new FormControl('');
   private searchTerm = toSignal(
     this.searchControl.valueChanges,
@@ -45,7 +47,7 @@ export class AddPanel {
 
   form: FormGroup = this.fb.group({
     panelProvider: ['', Validators.required],
-    maxComplete: ['auto', [Validators.required,]],
+    maxComplete: ['', [Validators.required,]],
     cpi: ['', [Validators.required, Validators.min(0.01)]],
     entryUrl: ['', [Validators.required]],
     quotas: this.fb.array([])
@@ -115,6 +117,18 @@ export class AddPanel {
     });
     return summary;
   });
+
+  constructor(private dialogRef: MatDialogRef<AddPanel>, @Inject(MAT_DIALOG_DATA) public data: any) {
+    if (data && data.allocationMode =='auto') {
+      this.form.patchValue({
+        maxComplete: 'Auto',
+      })
+    }
+  }
+  Cancel(notChangeStep?: boolean) {
+    this.dialogRef.close({ save: notChangeStep });
+  }
+
 
   ngOnInit(): void {
     this.loadInitialData();
@@ -354,10 +368,12 @@ export class AddPanel {
     }
 
     let id = localStorage.getItem('campaignId');
-
+    this.isLoading.set(true);
     this.apiService.post<any>('survey/campaigns/' + id + '/final-submit', payload).subscribe({
       next: (res: any) => {
         this.onCancel();
+        this.Cancel(false);
+        this.isLoading.set(false);
       },
       error: (err) => {
         console.error('Failed to add panel', err);
@@ -372,6 +388,7 @@ export class AddPanel {
     };
 
     this.onCancel();
+
   }
 
   private getFinalQualifications() {

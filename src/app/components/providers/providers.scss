@@ -111,7 +111,7 @@ $border: 1px solid $neutral-300;
 .panel-table-wrapper {
   background-color: $white;
   border: $border;
-  overflow: scroll;
+  overflow-y: scroll;
   height: 80vh;
 
 }

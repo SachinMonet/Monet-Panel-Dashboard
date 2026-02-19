@@ -86,11 +86,11 @@
                       View
                     </button> -->
 
-                    <button type="button" (click)="editPanel(p.id)"
-                      class="inline-flex items-center justify-center whitespace-nowrap text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 border bg-background text-foreground hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3 border-neutral-400">
+                    <button type="button" style="cursor: pointer;" (click)="editPanel(p.id)"
+                      class="inline-flex items-center justify-center whitespace-nowrap text-sm font-medium transition-all cursor-pointer border bg-background text-foreground hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3 border-neutral-400">
                       <lucide-icon name="square-pen" class="w-4 h-4"></lucide-icon>
                     </button>
-                    <button type="button" (click)="openDeleteDialog(p.id)"
+                    <button type="button" style="cursor: pointer;" (click)="openDeleteDialog(p.id) "
                       class="inline-flex items-center justify-center whitespace-nowrap text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 border bg-background text-foreground hover:bg-accent hover:text-accent-foreground h-8 rounded-md gap-1.5 px-3 border-neutral-400">
                       <lucide-icon name="trash-2" class="icon-tiny"></lucide-icon>
                     </button>

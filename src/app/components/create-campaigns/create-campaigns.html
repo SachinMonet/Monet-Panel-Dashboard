@@ -69,8 +69,14 @@
                             <div class="allocation-mode-content">
                                 <div>
                                     <div class="allocation-label">Allocation Mode</div>
-                                    <div class="allocation-description">Manually set target completes for each panel
+                                    <div class="allocation-description">
+                                        {{
+                                        allocationMode === 'manual'
+                                        ? 'Manually set target completes for each panel.'
+                                        : 'Panels compete automatically – faster panels get more completes.'
+                                        }}
                                     </div>
+
                                 </div>
                                 <div class="allocation-buttons">
                                     <button class="btn-allocation" type="button"
@@ -354,6 +360,6 @@
     cancelText="Cancel" (confirm)="confirmDelete()" (cancel)="closeDeleteDialog()"></app-confirm-dialog>
 
 
-@if(isAddPanelOpen){
+<!-- @if(isAddPanelOpen){
 <app-add-panel (close)="closeAddPanel()" (savePanel)="handlePanelSaved($event)"></app-add-panel>
-}
+} -->
