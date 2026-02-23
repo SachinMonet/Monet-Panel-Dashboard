@@ -119,7 +119,6 @@ export class AddPanel {
   });
 
   constructor(private dialogRef: MatDialogRef<AddPanel>, @Inject(MAT_DIALOG_DATA) public data: any) {
-
     if (data && data.allocationMode =='auto') {
       this.form.patchValue({
         maxComplete: 'Auto',
