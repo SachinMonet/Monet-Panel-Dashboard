@@ -119,10 +119,33 @@ export class AddPanel {
   });
 
   constructor(private dialogRef: MatDialogRef<AddPanel>, @Inject(MAT_DIALOG_DATA) public data: any) {
+
     if (data && data.allocationMode =='auto') {
       this.form.patchValue({
         maxComplete: 'Auto',
       })
+    }
+    console.log('Received data:', data);
+    if (data && data.component === 'edit' ) {
+      let campaignId = localStorage.getItem('campaignId');
+      this.apiService.get(`campaign/${campaignId}/panel/${data.panelProviderId}/final-get`).subscribe({
+        next: (res: any) => {
+          const panel = res.panel;
+          console.log('Panel details:', panel);
+          this.form.patchValue({
+            panelProvider: panel.panel_provider_id,
+            maxComplete: panel.target_completes,
+            cpi: panel.cpi,
+            entryUrl: panel.entry_url,
+            quotas: panel.quotas
+          });
+        },
+        error: (err) => {
+          console.error('Error fetching panel details:', err);
+        }
+      });
+
+      // Load panel details if needed
     }
   }
   Cancel(notChangeStep?: boolean) {
@@ -224,7 +247,7 @@ export class AddPanel {
       next: (res: any) => {
         this.isLoading.set(false);
         this.panelProviders.set(res.data);
-        this.form.patchValue({ panelProvider: this.panelProviders()[0].id });
+       // this.form.patchValue({ panelProvider: this.panelProviders()[0].id });
       },
       error: (err) => {
         console.error('Failed to load providers', err);

@@ -166,7 +166,7 @@ export class CreateCampaigns implements OnInit {
     const dialogRef = this.dialog.open(AddPanel, {
       width: '480px',
       disableClose: true,
-      data: { campaignId: this.campaignId, allocationMode: this.allocationMode },
+      data: { campaignId: this.campaignId, allocationMode: this.allocationMode,component: 'add' },
     });
 
     dialogRef.afterClosed().subscribe(result => {
@@ -350,6 +350,17 @@ export class CreateCampaigns implements OnInit {
     console.log('Edit Panel clicked for index:', index);
     let id = this.tempPanelData[index].panel_provider_id
     console.log('Panel provider ID for editing:', id);
+    const dialogRef = this.dialog.open(AddPanel, {
+      width: '480px',
+      disableClose: true,
+      data: { campaignId: this.campaignId, allocationMode: this.allocationMode, panelProviderId: id ,component: 'edit'},
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (!result.save) {
+        this.loadDataRows();
+      }
+    });
   }
 
   openDeleteDialog(id: number) {
