@@ -368,6 +368,10 @@ export class CreateCampaigns implements OnInit {
     });
   }
 
+  pausePanel(panel: any) {
+    console.log('Pause Panel clicked for panel:', panel);
+  }
+
   openDeleteDialog(id: number) {
     this.itemToDeleteId = id;
     this.confirmDeleteOpen = true;
