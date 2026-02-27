@@ -1,8 +1,28 @@
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { LucideModule } from '../../lucide/lucide-module';
-import { LucideAngularModule, } from 'lucide-angular';
+import { LucideAngularModule } from 'lucide-angular';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
+
+export interface Panel {
+  id: number;
+  name: string;
+  completes: number;
+  velocity: string;
+  status: string;
+  isAlert?: boolean;
+  badge?: string;
+}
+
+export interface Campaign {
+  id: number;
+  name: string;
+  progress: number;
+  completes: number;
+  target: number;
+  status: string;
+  panels: Panel[];
+}
 
 @Component({
   selector: 'app-dashboard',
@@ -11,231 +31,169 @@ import { Router, RouterLink } from '@angular/router';
   styleUrl: './dashboard.scss',
 })
 export class Dashboard {
-  tabs: any[] = ['LIVE', 'UPCOMING', 'COMPLETED'];
-  activeTab: any = 'LIVE';
+  tabs: string[] = ['LIVE', 'UPCOMING', 'COMPLETED'];
+  activeTab = 'LIVE';
   showProfileMenu = false;
 
-  headerUser = {
-    initials: 'JD',
-    name: 'Campaign Dashboard',
-  };
+  expandedIds = signal<Set<number>>(new Set());
 
-  alertActions: any[] = [
-    { label: 'Boost', icon: 'zap' },
-    { label: 'Reconfigure', icon: 'settings' },
-    { label: 'Close', icon: 'x' },
-  ];
-
-  campaigns: any[] = [
+  campaigns: Campaign[] = [
     {
       id: 1,
       name: 'US Consumer Electronics Q1',
       progress: 45,
-      velocity: 'Slow',
-      velocityColor: 'neutral-500',
-      activePanels: 3,
+      completes: 450,
+      target: 1000,
       status: 'LIVE',
-      isAlert: true,
-      badge: 'Low IR',
-      complete: 45,
-      actions: this.alertActions,
+      panels: [
+        { id: 11, name: 'Lucid', completes: 200, velocity: 'Normal', status: 'Active' },
+        { id: 12, name: 'Cint', completes: 150, velocity: 'Slow', status: 'Active', isAlert: true, badge: 'Low IR' },
+        { id: 13, name: 'Dynata', completes: 100, velocity: 'Slow', status: 'Active', isAlert: true, badge: 'Panel Stalled' },
+      ]
     },
     {
       id: 2,
       name: 'UK Financial Services Survey',
       progress: 32,
-      velocity: 'Slow',
-      velocityColor: 'neutral-500',
-      activePanels: 2,
+      completes: 256,
+      target: 800,
       status: 'LIVE',
-      isAlert: true,
-      badge: 'Panel Stalled',
-      complete: 32,
-      actions: this.alertActions,
+      panels: [
+        { id: 21, name: 'Cint', completes: 180, velocity: 'Normal', status: 'Active' },
+        { id: 22, name: 'Toluna', completes: 76, velocity: 'Slow', status: 'Active', isAlert: true, badge: 'Low IR' },
+      ]
     },
     {
       id: 3,
       name: 'Germany Healthcare Study',
       progress: 78,
-      velocity: 'Fast',
-      velocityColor: 'natural-700',
-      activePanels: 5,
+      completes: 780,
+      target: 1000,
       status: 'LIVE',
-      isAlert: false,
-      actions: this.alertActions,
+      panels: [
+        { id: 31, name: 'Lucid', completes: 500, velocity: 'Fast', status: 'Active' },
+        { id: 32, name: 'Cint', completes: 280, velocity: 'Normal', status: 'Active' },
+      ]
     },
     {
       id: 4,
-      name: 'France Retail Behavior',
-      progress: 58,
-      velocity: 'Normal',
-      velocityColor: 'neutral-600',
-      activePanels: 4,
-      status: 'LIVE',
-      isAlert: false,
-      actions: this.alertActions,
+      name: 'Spain Tech Adoption',
+      progress: 0,
+      completes: 0,
+      target: 500,
+      status: 'UPCOMING',
+      panels: []
     },
     {
       id: 5,
-      name: 'Spain Tech Adoption',
-      progress: 0,
-      velocity: 'Normal',
-      velocityColor: 'neutral-600',
-      activePanels: 0,
-      status: 'UPCOMING',
-      isAlert: false,
-      actions: this.alertActions,
-    },
-    {
-      id: 6,
       name: 'Italy Food Preferences',
       progress: 100,
-      velocity: 'fast',
-      velocityColor: 'neutral-700',
-      activePanels: 0,
+      completes: 600,
+      target: 600,
       status: 'COMPLETED',
-      isAlert: false,
-      actions: this.alertActions,
+      panels: [
+        { id: 51, name: 'Lucid', completes: 600, velocity: 'Fast', status: 'Completed' },
+      ]
     },
   ];
-
 
   isLoading = false;
   error: string | null = null;
 
-  constructor(private router: Router) { }
+  constructor(private router: Router) {}
 
   ngOnInit() {
-    setTimeout(() => {
-
-      this.fetchCampaignData();
-    }, 1000);
-    console.log(this.activeTab)
+    // Expand first campaign by default
+    const first = this.campaigns.find(c => c.status === this.activeTab);
+    if (first) this.toggleExpand(first.id);
   }
 
-
-  // Getter to check if there are any alert campaigns
-
-
-  // Getter to get only alert campaigns
-  get alertCampaigns(): any[] {
-    return this.campaigns.filter(campaign => campaign.isAlert);
+  getFilteredCampaigns(): Campaign[] {
+    return this.campaigns.filter(c => c.status === this.activeTab);
   }
 
-  closeProfileMenu() {
-    this.showProfileMenu = false;
+  toggleExpand(id: number): void {
+    this.expandedIds.update(set => {
+      const next = new Set(set);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
   }
 
-  // ✅ Logout action
-  logout() {
-    console.log('Logging out...');
-    // Add your logout logic here
-    this.router.navigate(['/login']);
-    this.closeProfileMenu();
+  isExpanded(id: number): boolean {
+    return this.expandedIds().has(id);
   }
 
-  toggleProfileMenu() {
-    this.showProfileMenu = !this.showProfileMenu;
+  // Alert panels across all live campaigns
+  getAlertPanels(): { panelId: number; campaignName: string; panelName: string; completes: number; badge?: string }[] {
+    const result: any[] = [];
+    this.campaigns
+      .filter(c => c.status === this.activeTab)
+      .forEach(c => {
+        c.panels
+          .filter(p => p.isAlert)
+          .forEach(p => {
+            result.push({
+              panelId: p.id,
+              campaignName: c.name,
+              panelName: p.name,
+              completes: p.completes,
+              badge: p.badge
+            });
+          });
+      });
+    return result;
   }
 
-  fetchCampaignData() {
-    this.isLoading = true;
-    this.error = null;
-
-    // Simulate API call
-    setTimeout(() => {
-      this.isLoading = false;
-    }, 300);
+  hasAlertPanels(): boolean {
+    return this.getAlertPanels().length > 0;
   }
 
-  setTab(tab: any) {
-    console.log(`Switching to tab: ${tab}`);
+  getVelocityClass(velocity: string): string {
+    switch (velocity?.toLowerCase()) {
+      case 'slow': return 'chip--slow';
+      case 'normal': return 'chip--normal';
+      case 'fast': return 'chip--fast';
+      default: return 'chip--normal';
+    }
+  }
+
+  setTab(tab: string) {
     this.activeTab = tab;
+    this.expandedIds.set(new Set());
+    const first = this.campaigns.find(c => c.status === tab);
+    if (first) this.toggleExpand(first.id);
   }
 
   createNewCampaign() {
     this.router.navigate(['/create-campaigns']);
-    console.log('Creating new campaign...');
   }
 
-  onTableActionClick(action: any, campaign: any) {
-    console.log(`Action: ${action.id}`, {
-      actionLabel: action.label,
-      campaignName: campaign.name,
-      campaignId: campaign.id,
-    });
+  toggleProfileMenu() { this.showProfileMenu = !this.showProfileMenu; }
+  closeProfileMenu() { this.showProfileMenu = false; }
+  logout() { this.router.navigate(['/login']); this.closeProfileMenu(); }
 
+  // Campaign actions
+  addPanel(campaign: Campaign, event: Event) { event.stopPropagation(); console.log('Add panel to:', campaign.name); }
+  editCampaign(campaign: Campaign, event: Event) { event.stopPropagation(); console.log('Edit campaign:', campaign.name); }
+  launchCampaign(campaign: Campaign, event: Event) { event.stopPropagation(); console.log('Launch campaign:', campaign.name); }
+  closeCampaign(campaign: Campaign, event: Event) { event.stopPropagation(); console.log('Close campaign:', campaign.name); }
 
+  // Panel actions
+  boostPanelById(panel: Panel) { console.log('Boost panel:', panel.name); }
+  clonePanel(panel: Panel) { console.log('Clone panel:', panel.name); }
+  pausePanel(panel: Panel) { console.log('Pause panel:', panel.name); }
+  removePanel(panel: Panel) { console.log('Remove panel:', panel.name); }
 
-
-
-
-
-    switch (action.id) {
-      case 'boost':
-        console.log('Boosting campaign:', campaign.name);
-        break;
-      case 'clone':
-        console.log('Cloning campaign:', campaign.name);
-        break;
-      case 'pause':
-        console.log('Pausing campaign:', campaign.name);
-        break;
-      case 'close':
-        console.log('Closing campaign:', campaign.name);
-        break;
-      case 'view':
-        console.log('Viewing campaign:', campaign.name);
-        break;
-      case 'edit':
-        console.log('Editing campaign:', campaign.name);
-        break;
-      case 'delete':
-        console.log('Deleting campaign:', campaign.name);
-        break;
-      default:
-        console.log('Unknown action:', action.id);
+  // Alert actions
+  boostPanel(alert: any) { console.log('Boost panel from alert:', alert.panelName); }
+  reconfigurePanel(alert: any) { console.log('Reconfigure panel:', alert.panelName); }
+  dismissAlert(alert: any) {
+    //console.log('Dismiss alert for panel:', alert.panelName);
+    const campaign = this.campaigns.find(c => c.name === alert.campaignName);
+    if (campaign) {
+      const panel = campaign.panels.find(p => p.id === alert.panelId);
+      if (panel) panel.isAlert = false;
     }
   }
-
-
-  getVelocityColor(colorClass: string): string {
-    const colors: { [key: string]: string } = {
-      'neutral-500': '#737373',
-      'neutral-600': '#525252',
-      'neutral-700': '#404040',
-    };
-    return colors[colorClass] || '#737373';
-  }
-
-  hasAlertCampaigns(): boolean {
-    return this.campaigns.some(c => c.status === this.activeTab && c.isAlert);
-  }
-
-  // Get velocity class for styling
-  getVelocityClass(velocity: string): string {
-    switch (velocity) {
-      case 'Slow':
-        return 'chip--slow';
-      case 'Normal':
-        return 'chip--normal';
-      case 'Fast':
-        return 'chip--fast';
-      default:
-        return 'chip--normal';
-    }
-  }
-
-
-  onAlertActionClick(action: any, campaign: any) {
-    console.log(`Alert Action: ${action.id}`, {
-      actionLabel: action.label,
-      campaignName: campaign.name,
-      campaignId: campaign.id,
-    });
-  }
-
 }
-
-
-

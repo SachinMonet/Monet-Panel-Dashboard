@@ -1,52 +1,21 @@
 <div class="dashboard-root">
   <div class="dashboard-shell">
+
     <!-- Header -->
-    <!-- <header class="header">
-      <div class="header__left">
-        <div class="header__logo">
-          <span>PM</span>
-        </div>
-        <h1 class="header__title">Campaign Dashboard</h1>
-      </div>
-
-      <div class="header__right">
-        <button class="btn btn--primary">
-          + New Campaign
-        </button>
-
-        <button class="icon-btn" title="Settings">
-          <lucide-icon name="settings" class="icon"></lucide-icon>
-        </button>
-
-        <div class="header__avatar">
-          <span>JD</span>
-        </div>
-      </div>
-    </header> -->
     <header class="header">
       <div class="header__left">
-        <div class="header__logo">
-          <span>PM</span>
-        </div>
+        <div class="header__logo"><span>PM</span></div>
         <h1 class="header__title">Campaign Dashboard</h1>
       </div>
-
       <div class="header__right">
-        <button class="btn btn--primary" (click)="createNewCampaign()">
-          + New Campaign
-        </button>
-
+        <button class="btn btn--primary" (click)="createNewCampaign()">+ New Campaign</button>
         <button class="icon-btn" title="Settings" routerLink="/providers">
           <lucide-icon name="settings" class="icon"></lucide-icon>
         </button>
-
-        <!-- Avatar with Dropdown Menu -->
         <div class="header__profile">
           <button class="header__avatar" (click)="toggleProfileMenu()" [class.header__avatar--active]="showProfileMenu">
             <span>JD</span>
           </button>
-
-          <!-- Dropdown Menu -->
           @if (showProfileMenu) {
           <div class="profile-menu" [@slideDown]>
             <div class="profile-menu__header">
@@ -54,40 +23,29 @@
                 <div class="profile-menu__avatar-lg">JD</div>
                 <div>
                   <p class="profile-menu__name">John Doe</p>
-                  <p class="profile-menu__email">john.doe@company.com</p>
+                  <p class="profile-menu__email">john.doe&#64;company.com</p>
                 </div>
               </div>
             </div>
-
             <div class="profile-menu__divider"></div>
-
             <button class="profile-menu__item" (click)="closeProfileMenu()">
-              <lucide-icon name="user" class="profile-menu__icon"></lucide-icon>
-              <span>My Profile</span>
+              <lucide-icon name="user" class="profile-menu__icon"></lucide-icon><span>My Profile</span>
             </button>
-
             <button class="profile-menu__item" (click)="closeProfileMenu()">
-              <lucide-icon name="settings" class="profile-menu__icon"></lucide-icon>
-              <span>Settings</span>
+              <lucide-icon name="settings" class="profile-menu__icon"></lucide-icon><span>Settings</span>
             </button>
-
             <button class="profile-menu__item" (click)="closeProfileMenu()">
-              <lucide-icon name="help-circle" class="profile-menu__icon"></lucide-icon>
-              <span>Help & Support</span>
+              <lucide-icon name="help-circle" class="profile-menu__icon"></lucide-icon><span>Help & Support</span>
             </button>
-
             <div class="profile-menu__divider"></div>
-
             <button class="profile-menu__item profile-menu__item--danger" (click)="logout()">
-              <lucide-icon name="log-out" class="profile-menu__icon"></lucide-icon>
-              <span>Logout</span>
+              <lucide-icon name="log-out" class="profile-menu__icon"></lucide-icon><span>Logout</span>
             </button>
           </div>
           }
         </div>
       </div>
     </header>
-
 
     <!-- Tabs -->
     <div class="tabs-header">
@@ -101,41 +59,36 @@
     </div>
 
     <main class="content">
-      <!-- Attention Required -->
-      @if (hasAlertCampaigns()) {
-      <section class="alert-card">
-        <h2 class="alert-card__title">
-          Attention Required – Slow Campaigns
-        </h2>
 
+      <!-- Attention Required – Slow Panels -->
+      @if (hasAlertPanels()) {
+      <section class="alert-card">
+        <h2 class="alert-card__title">Attention Required – Slow Panels</h2>
         <div class="alert-list">
-          @for (campaign of campaigns; track campaign.id) {
-          @if (campaign.status === activeTab && campaign.isAlert) {
+          @for (alert of getAlertPanels(); track alert.panelId) {
           <div class="alert-row">
             <div class="alert-row__info">
-              <div class="alert-row__name">
-                {{ campaign.name }}
-              </div>
+              <div class="alert-row__name">{{ alert.campaignName }} → {{ alert.panelName }}</div>
               <div class="alert-row__meta">
-                <span>{{ campaign.complete }}% Complete</span>
-                @if (campaign.badge) {
-                <span class="alert-row__badge">
-                  {{ campaign.badge }}
-                </span>
+                <span>{{ alert.completes }} completes</span>
+                @if (alert.badge) {
+                <span class="alert-row__badge">{{ alert.badge }}</span>
                 }
+                <span class="alert-row__badge alert-row__badge--slow">Slow</span>
               </div>
             </div>
-
             <div class="alert-row__actions">
-              @for (action of campaign.actions; track action.id) {
-              <button class="btn btn--ghost" [title]="action.title" (click)="onAlertActionClick(action, campaign)">
-                <lucide-icon [name]="action.icon" class="icon icon--left"></lucide-icon>
-                <span>{{ action.label }}</span>
+              <button class="btn btn--ghost" (click)="boostPanel(alert)">
+                <lucide-icon name="zap" class="icon icon--left"></lucide-icon><span>Boost Panel</span>
               </button>
-              }
+              <button class="btn btn--ghost" (click)="reconfigurePanel(alert)">
+                <lucide-icon name="settings" class="icon icon--left"></lucide-icon><span>Reconfigure Panel</span>
+              </button>
+              <button class="btn btn--ghost" (click)="dismissAlert(alert)">
+                <lucide-icon name="x" class="icon icon--left"></lucide-icon><span>Dismiss</span>
+              </button>
             </div>
           </div>
-          }
           }
         </div>
       </section>
@@ -146,58 +99,102 @@
         <table class="table">
           <thead>
             <tr>
-              <th>Campaign Name</th>
-              <th class="table__col--progress">Progress</th>
+              <th style="width:40px"></th>
+              <th>Campaign / Panel</th>
+              <th>Progress</th>
               <th>Velocity</th>
-              <th>Active Panels</th>
               <th>Status</th>
               <th>Actions</th>
             </tr>
           </thead>
-
           <tbody>
-            @for (row of campaigns; track row.id; let i = $index) {
-            @if (row.status === activeTab) {
-            <tr [class.table__row--alt]="i % 2 === 1">
-              <td>{{ row.name }}</td>
+            @for (row of getFilteredCampaigns(); track row.id) {
 
+            <!-- Campaign Row -->
+            <tr class="campaign-row" (click)="toggleExpand(row.id)">
+              <td class="expand-cell">
+                <button class="expand-btn" [class.expanded]="isExpanded(row.id)">
+                  <lucide-icon name="chevron-down" class="icon icon--small"></lucide-icon>
+                </button>
+              </td>
+              <td>
+                <div class="campaign-name">{{ row.name }}</div>
+                <div class="campaign-sub">{{ row.panels.length }} panels</div>
+              </td>
               <td>
                 <div class="progress">
                   <div class="progress__track">
-                    <div class="progress__indicator" [style.transform]="'translateX(' + (row.progress - 100) + '%)'">
+                    <div class="progress__indicator"
+                      [style.transform]="'translateX(' + (row.progress - 100) + '%)'">
                     </div>
                   </div>
-                  <span class="progress__value">
-                    {{ row.progress }}%
-                  </span>
+                  <span class="progress__value">{{ row.completes }}/{{ row.target }}</span>
                 </div>
               </td>
-
+              <td><span class="dash-text">—</span></td>
               <td>
-                <span class="chip" [ngClass]="getVelocityClass(row.velocity)">
-                  {{ row.velocity }}
-                </span>
+                <span class="status-badge status-badge--live">{{ row.status }}</span>
               </td>
-
-              <td>{{ row.activePanels }}</td>
-              <td>{{ row.status }}</td>
-
               <td>
                 <div class="row-actions">
-                  @for (action of row.actions; track action.id) {
-                  <button class="icon-btn" [title]="action.title" (click)="onTableActionClick(action, row)"
-                    [attr.data-action]="action.id">
-                    <lucide-icon [name]="action.icon" class="icon icon--small"></lucide-icon>
+                  <button class="icon-btn" title="Add Panel" (click)="addPanel(row, $event)">
+                    <lucide-icon name="plus" class="icon icon--small" routerLink="/create-campaigns" ></lucide-icon>
                   </button>
-                  }
+                  <button class="icon-btn" title="Settings" (click)="editCampaign(row, $event)" routerLink="/providers">
+                    <lucide-icon name="settings" class="icon icon--small"></lucide-icon>
+                  </button>
+                  <button class="icon-btn" title="Launch" (click)="launchCampaign(row, $event)" >
+                    <lucide-icon name="play" class="icon icon--small"></lucide-icon>
+                  </button>
+                  <button class="icon-btn" title="Close" (click)="closeCampaign(row, $event)">
+                    <lucide-icon name="x" class="icon icon--small"></lucide-icon>
+                  </button>
                 </div>
               </td>
             </tr>
+
+            <!-- Panel Sub-Rows -->
+            @if (isExpanded(row.id)) {
+              @for (panel of row.panels; track panel.id) {
+              <tr class="panel-subrow">
+                <td></td>
+                <td class="panel-name-cell">
+                  <span class="panel-arrow">↳</span> {{ panel.name }}
+                </td>
+                <td>
+                  <span class="completes-text">{{ panel.completes }} completes</span>
+                </td>
+                <td>
+                  <span class="chip" [ngClass]="getVelocityClass(panel.velocity)">{{ panel.velocity }}</span>
+                </td>
+                <td>
+                  <span class="status-badge status-badge--active">{{ panel.status }}</span>
+                </td>
+                <td>
+                  <div class="row-actions">
+                    <button class="icon-btn" title="Boost" (click)="boostPanelById(panel)">
+                      <lucide-icon name="zap" class="icon icon--small"></lucide-icon>
+                    </button>
+                    <button class="icon-btn" title="Clone" (click)="clonePanel(panel)">
+                      <lucide-icon name="copy" class="icon icon--small"></lucide-icon>
+                    </button>
+                    <button class="icon-btn" title="Pause" (click)="pausePanel(panel)">
+                      <lucide-icon name="pause" class="icon icon--small"></lucide-icon>
+                    </button>
+                    <button class="icon-btn" title="Remove" (click)="removePanel(panel)">
+                      <lucide-icon name="x" class="icon icon--small"></lucide-icon>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              }
             }
+
             }
           </tbody>
         </table>
       </section>
+
     </main>
   </div>
 </div>
