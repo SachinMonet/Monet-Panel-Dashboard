@@ -28,13 +28,13 @@
               </div>
             </div>
             <div class="profile-menu__divider"></div>
-            <button class="profile-menu__item" (click)="closeProfileMenu()">
+            <button class="profile-menu__item" (click)="closeProfileMenu()" routerLink="/profile">
               <lucide-icon name="user" class="profile-menu__icon"></lucide-icon><span>My Profile</span>
             </button>
-            <button class="profile-menu__item" (click)="closeProfileMenu()">
+            <!-- <button class="profile-menu__item" (click)="closeProfileMenu()" routerLink="/settings">
               <lucide-icon name="settings" class="profile-menu__icon"></lucide-icon><span>Settings</span>
-            </button>
-            <button class="profile-menu__item" (click)="closeProfileMenu()">
+            </button> -->
+            <button class="profile-menu__item" (click)="closeProfileMenu()" routerLink="/help-support">
               <lucide-icon name="help-circle" class="profile-menu__icon"></lucide-icon><span>Help & Support</span>
             </button>
             <div class="profile-menu__divider"></div>

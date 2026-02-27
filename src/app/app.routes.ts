@@ -22,6 +22,16 @@ export const routes: Routes = [
           import('./components/dashboard/dashboard').then(c => c.Dashboard),
       },
       {
+        path:'help-support',
+        loadComponent: () =>
+          import('./components/help-and-support/help-and-support').then(c => c.HelpAndSupport),
+      },
+      {
+        path: 'profile',
+        loadComponent: () =>
+          import('./components/my-profile/my-profile').then(c => c.MyProfile),
+      },
+      {
         path: 'providers',
         loadComponent: () =>
           import('./components/providers/providers').then(c => c.Providers),

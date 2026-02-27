@@ -1,0 +1,55 @@
+<div class="page-wrapper">
+  <!-- Top bar -->
+  <header class="page-header">
+    <div class="page-header__left">
+      <button class="back-btn" type="button" routerLink="/dashboard">
+        <span class="icon-chevron-left"></span>
+      </button>
+      <div class="page-title">
+        <span class="page-title__abbr">PR</span>
+        <span class="page-title__text">My Profile</span>
+      </div>
+    </div>
+
+    <!-- Edit / Cancel button always visible -->
+    <button type="button" class="btn-secondary" (click)="toggleEdit()">
+      {{ isEditMode() ? 'Cancel' : 'Edit' }}
+    </button>
+  </header>
+
+  <!-- Card -->
+  <section class="content-card">
+    <h2 class="section-title">Basic Information</h2>
+
+    <form [formGroup]="profileForm" (ngSubmit)="onSubmit()" class="form-grid">
+      @for (field of profileFields; track field.key) {
+        <div class="form-row">
+          <div class="form-field">
+            <label [for]="field.key">{{ field.label }}</label>
+
+            @if (field.type === 'textarea') {
+              <textarea
+                [id]="field.key"
+                [placeholder]="field.placeholder"
+                [formControlName]="field.key"
+              ></textarea>
+            } @else {
+              <input
+                [id]="field.key"
+                [type]="field.type"
+                [placeholder]="field.placeholder"
+                [formControlName]="field.key"
+              />
+            }
+          </div>
+        </div>
+      }
+
+      <div class="form-actions">
+        <button type="submit" class="btn-primary" [disabled]="!isEditMode()">
+          Save
+        </button>
+      </div>
+    </form>
+  </section>
+</div>
