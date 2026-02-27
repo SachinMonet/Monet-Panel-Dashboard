@@ -126,14 +126,14 @@ export class AddPanel {
         maxComplete: 'Auto',
       })
     }
-    console.log('Received data:', data);
+    //console.log('Received data:', data);
     if (data && data.component === 'edit') {
   let campaignId = localStorage.getItem('campaignId');
 this.editPanelId.set(data.panelProviderId);
   this.apiService.get(`campaign/${campaignId}/panel/${data.panelProviderId}/final-get`).subscribe({
     next: (res: any) => {
       const panel = res.panel;
-      console.log('Panel details:', panel);
+     // console.log('Panel details:', panel);
       this.form.patchValue({
         panelProvider: panel.panel_provider_id,
         maxComplete: panel.target_completes,

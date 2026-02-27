@@ -162,7 +162,6 @@ export class CreateCampaigns implements OnInit {
 
   addPanel() {
     // this.isAddPanelOpen = true;
-    console.log('Add Panel clicked');
 
     const dialogRef = this.dialog.open(AddPanel, {
       width: '480px',
@@ -209,7 +208,7 @@ export class CreateCampaigns implements OnInit {
 
   removePanel(index: any) {
    let x =  this.tempPanelData[index].panel_provider_id
-   console.log('Remove Panel clicked for index:', index, 'with panel_provider_id:', x);
+   //console.log('Remove Panel clicked for index:', index, 'with panel_provider_id:', x);
     this.openDeleteDialog(x);
 
 
@@ -353,9 +352,9 @@ export class CreateCampaigns implements OnInit {
     }
   }
   editPanel(index: number) {
-    console.log('Edit Panel clicked for index:', index);
+    //console.log('Edit Panel clicked for index:', index);
     let id = this.tempPanelData[index].panel_provider_id
-    console.log('Panel provider ID for editing:', id);
+   // console.log('Panel provider ID for editing:', id);
     const dialogRef = this.dialog.open(AddPanel, {
       width: '480px',
       disableClose: true,
