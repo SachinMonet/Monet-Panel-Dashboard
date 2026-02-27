@@ -59,6 +59,8 @@ export class AddPanel {
   private rawQuestions = signal<ApiQuestion[]>([]);
   panelProviders = signal<any[]>([]);
   isLoading = signal<boolean>(false);
+  editPanelId = signal<number | null>(null);
+  isEditMode = computed(() => this.data?.component === 'edit');
 
   addedQuestionIds = signal<Set<number>>(new Set());
   selectedOptions = signal<{ [questionId: number]: Set<number> }>({});
@@ -125,27 +127,58 @@ export class AddPanel {
       })
     }
     console.log('Received data:', data);
-    if (data && data.component === 'edit' ) {
-      let campaignId = localStorage.getItem('campaignId');
-      this.apiService.get(`campaign/${campaignId}/panel/${data.panelProviderId}/final-get`).subscribe({
-        next: (res: any) => {
-          const panel = res.panel;
-          console.log('Panel details:', panel);
-          this.form.patchValue({
-            panelProvider: panel.panel_provider_id,
-            maxComplete: panel.target_completes,
-            cpi: panel.cpi,
-            entryUrl: panel.entry_url,
-            quotas: panel.quotas
-          });
-        },
-        error: (err) => {
-          console.error('Error fetching panel details:', err);
-        }
+    if (data && data.component === 'edit') {
+  let campaignId = localStorage.getItem('campaignId');
+this.editPanelId.set(data.panelProviderId);
+  this.apiService.get(`campaign/${campaignId}/panel/${data.panelProviderId}/final-get`).subscribe({
+    next: (res: any) => {
+      const panel = res.panel;
+      console.log('Panel details:', panel);
+      this.form.patchValue({
+        panelProvider: panel.panel_provider_id,
+        maxComplete: panel.target_completes,
+        cpi: panel.cpi,
+        entryUrl: panel.entry_url,
       });
 
-      // Load panel details if needed
+      const qualifications = res.panel.qualifications;
+      const optionsMap = qualifications.reduce((acc: any, qual: any) => {
+        acc[qual.qs_id] = new Set(qual.option_ids);
+        return acc;
+      }, {});
+      this.selectedOptions.set(optionsMap);
+
+      const addedIds = new Set<number>(qualifications.map((q: any) => q.qs_id));
+      this.addedQuestionIds.set(addedIds);
+
+      const quotas = res.panel.quotas || [];
+      while (this.quotas.length > 0) this.quotas.removeAt(0); // clear existing
+
+      quotas.forEach((q: any) => {
+        const quotaGroup = this.createQuota();
+        quotaGroup.patchValue({
+          name: q.quota_name,
+          target: q.target
+        });
+
+        const conditionsArray = quotaGroup.get('conditions') as FormArray;
+        (q.conditions || []).forEach((cond: any) => {
+          const condGroup = this.createCondition();
+          condGroup.patchValue({
+            question: cond.qs_id?.toString(),
+            answer: cond.opt_id?.toString()
+          });
+          conditionsArray.push(condGroup);
+        });
+
+        this.quotas.push(quotaGroup);
+      });
+    },
+    error: (err) => {
+      console.error('Error fetching panel details:', err);
     }
+  });
+}
   }
   Cancel(notChangeStep?: boolean) {
     this.dialogRef.close({ save: notChangeStep });
@@ -452,6 +485,52 @@ export class AddPanel {
     return selectedQuestion ? selectedQuestion.options : [];
   }
 
+ onUpdate(): void {
+  if (this.currentStep() === 3 && this.quotas.invalid) {
+    this.markFormGroupTouched(this.quotas);
+    return;
+  }
+
+  const panelData = {
+    panel_provider_id: this.form.value.panelProvider,
+    target_completes: this.form.value.maxComplete,
+    cpi: this.form.value.cpi,
+    entry_url: this.form.value.entryUrl,
+  };
+
+  const payload = {
+    panel: panelData,
+    qualifications: this.selectedSummary().map(item => ({
+      qs_id: item.id,
+      option_ids: item.options.map(o => o.id)
+    })),
+    quotas: this.form.value.quotas.map((q: any) => ({
+      quota_name: q.name,
+      target: q.target,
+      conditions: q.conditions.map((cond: any) => ({
+        qs_id: cond.question ? Number(cond.question) : null,
+        opt_id: cond.answer ? Number(cond.answer) : null
+      }))
+    })),
+    skip: false
+  };
+
+  let id = localStorage.getItem('campaignId');
+  const url = `survey/campaigns/${id}/panels/${this.editPanelId()}/final-update`;
+
+  this.isLoading.set(true);
+  this.apiService.put<any>(url, payload).subscribe({
+    next: (res: any) => {
+      this.onCancel();
+      this.Cancel(false);
+      this.isLoading.set(false);
+    },
+    error: (err) => {
+      console.error('Failed to update panel', err);
+      this.onCancel();
+    }
+  });
+}
 
 
 }

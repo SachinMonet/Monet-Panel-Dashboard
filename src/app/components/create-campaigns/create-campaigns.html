@@ -131,48 +131,48 @@
                                         </tr>
                                     </thead>
 
-                                    <tbody [formArrayName]="this.currentStepData.stepName">
+                                <tbody [formArrayName]="this.currentStepData.stepName">
 
-                                        @if (panels.length === 0) {
-                                        <tr class="empty-row">
-                                            <td colspan="6" style="text-align:center; padding: 2rem; color: #666;">
-                                                No panels added yet. Click "Add Panel" to start.
-                                            </td>
-                                        </tr>
-                                        }
+  @if (panelRows().length === 0) {
+    <tr class="empty-row">
+      <td colspan="6" style="text-align:center; padding: 2rem; color: #666;">
+        No panels added yet. Click "Add Panel" to start.
+      </td>
+    </tr>
+  }
 
-                                        @for (panel of panels.controls; track $index) {
-                                        <tr class="panel-row" [formGroupName]="$index">
-                                            <td>{{ panel?.get('providerName')?.value }}</td>
+  @for (panel of panelRows(); track $index) {
+    <tr class="panel-row" [formGroupName]="$index">
+      <td>{{ panel?.get('providerName')?.value }}</td>
 
-                                            <td>
-                                                <input type="text" class="input-number" placeholder="0"
-                                                    formControlName="target" />
-                                            </td>
+      <td>
+        <input type="text" class="input-number" placeholder="0"
+          formControlName="target" />
+      </td>
 
-                                            <td>0</td>
+      <td>0</td>
 
-                                            <td>
-                                                <input type="number" step="0.01" class="input-number" placeholder="0.00"
-                                                    formControlName="cpi" />
-                                            </td>
+      <td>
+        <input type="number" step="0.01" class="input-number" placeholder="0.00"
+          formControlName="cpi" />
+      </td>
 
-                                            <td>Active</td>
+      <td>Active</td>
 
-                                            <td>
-                                                <div class="actions">
-                                                    <button class="action-btn" type="button" title="Edit" (click)="editPanel($index)">
-                                                        <lucide-icon name="square-pen" class="icon-tiny"></lucide-icon>
-                                                    </button>
-                                                    <button class="action-btn" type="button" title="Remove"
-                                                        (click)="removePanel($index)">
-                                                        <lucide-icon name="trash-2" class="icon-tiny"></lucide-icon>
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                        }
-                                    </tbody>
+      <td>
+        <div class="actions">
+          <button class="action-btn" type="button" title="Edit" (click)="editPanel($index)">
+            <lucide-icon name="square-pen" class="icon-tiny"></lucide-icon>
+          </button>
+          <button class="action-btn" type="button" title="Remove" (click)="removePanel($index)">
+            <lucide-icon name="trash-2" class="icon-tiny"></lucide-icon>
+          </button>
+        </div>
+      </td>
+    </tr>
+  }
+
+</tbody>
                                 </table>
                             </div>
                         </div>

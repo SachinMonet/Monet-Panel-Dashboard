@@ -65,6 +65,7 @@ export class CreateCampaigns implements OnInit {
   isAddPanelOpen = false;
   reviewData = signal<any>({});
   tempPanelData:any
+  panelRows = signal<any[]>([]);
 
   private languagesLoaded = false;
   private countriesLoaded = false;
@@ -218,27 +219,31 @@ export class CreateCampaigns implements OnInit {
 
 
   loadDataRows() {
-    this.isLoading.set(true);
-    const panelsArray = this.form.get('Panels') as FormArray;
-    if (!panelsArray) return;
+  this.isLoading.set(true);
+  const panelsArray = this.form.get('Panels') as FormArray;
+  if (!panelsArray) return;
 
-    this._api.get(`campaigns/${this.campaignId}/panels`).subscribe((res: any) => {
-      this.isLoading.set(false);
+  this._api.get(`campaigns/${this.campaignId}/panels`).subscribe((res: any) => {
+    this.isLoading.set(false);
 
-      const panelList = res?.data || [];
-      this.tempPanelData = res.data;
-      panelList.forEach((row: any) => {
-        const panelGroup = this.fb.group({
-          providerName: [row.provider?.name, Validators.required],
-          target: [row.max_completes, [Validators.required, Validators.min(1)]],
-          cpi: [row.cpi, [Validators.required, Validators.min(0.1)]],
-          status: [row.status ?? 'active']   // optional
-        });
+    const panelList = res?.data || [];
+    this.tempPanelData = res.data;
 
-        panelsArray.push(panelGroup);
+    panelsArray.clear();
+
+    panelList.forEach((row: any) => {
+      const panelGroup = this.fb.group({
+        providerName: [row.provider?.name, Validators.required],
+        target: [row.max_completes, [Validators.required, Validators.min(1)]],
+        cpi: [row.cpi, [Validators.required, Validators.min(0.1)]],
+        status: [row.status]
       });
+      panelsArray.push(panelGroup);
     });
-  }
+
+    this.panelRows.set(panelsArray.controls as FormGroup[]);
+  });
+}
 
 
 
@@ -256,6 +261,7 @@ export class CreateCampaigns implements OnInit {
      
     } else {
       panelControls.forEach(group => group.get('target')?.disable());
+      panelControls.forEach(group => group.get('cpi')?.disable());
       panelControls.forEach(group => group.get('target')?.patchValue('Auto'));
     }
   }

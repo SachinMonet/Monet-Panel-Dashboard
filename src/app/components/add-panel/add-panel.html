@@ -13,7 +13,7 @@
     <button type="button" class="btn btn-ghost " (click)="Cancel(true)">x</button>
 
     <header class="dialog-header">
-      <h2 class="dialog-title">Add Panel Provider</h2>
+      <h2 class="dialog-title">{{ isEditMode() ? 'Edit Panel Provider' : 'Add Panel Provider' }}</h2>
       <p class="dialog-description">
         Configure panel provider settings, qualifications, and quotas.
       </p>
@@ -328,8 +328,8 @@
           Next Step
           </button>
           } @else {
-          <button type="button" class="btn btn-primary" (click)="onFinish(false)">
-            Finish
+          <button type="button" class="btn btn-primary" (click)=" isEditMode() ? onUpdate() : onFinish(false)">
+            {{ isEditMode() ? 'Update' : 'Finish' }}
           </button>
           }
       </div>
