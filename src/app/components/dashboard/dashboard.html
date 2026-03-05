@@ -58,6 +58,17 @@
       </div>
     </div>
 
+    @if (isLoading()) {
+<div class="loader-wrapper">
+    <div class="loader-container">
+        <div class="loader-dot"></div>
+        <div class="loader-dot"></div>
+        <div class="loader-dot"></div>
+    </div>
+    <p class="loader-text">Loading...</p>
+</div>
+} @else {
+
     <main class="content">
 
       <!-- Attention Required – Slow Panels -->
@@ -195,6 +206,6 @@
         </table>
       </section>
 
-    </main>
+    </main>}
   </div>
 </div>

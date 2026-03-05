@@ -48,10 +48,7 @@ export class HelpAndSupport {
       this.helpForm.markAllAsTouched();
       return;
     }
-
-    const value = this.helpForm.getRawValue();
-    console.log('HELP & SUPPORT FORM =>', value);
-    alert(JSON.stringify(value, null, 2));
+ 
 
     // after submit, keep it simple: back to view mode
     this.isEditMode.set(false);
